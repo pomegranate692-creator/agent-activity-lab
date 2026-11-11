@@ -56,7 +56,8 @@ for (const c of picked) {
     ev.push({ t: T(c.start), type: 'work_delegated', fromId: 'main', toId: id, workId: 'w-' + id, description: showInputs ? String(c.input.description || '') : 'Subagent task' });
   }
   const dur = c.end ? Math.min(Math.max(c.end - c.start, 300), 3000) : 1000;
-  ev.push({ t: T(c.start), type: 'tool_called', agentId: isSub ? subOf[c.id] : agent, tool: c.name.replace(/^mcp__/, '').slice(0, 40), input: brief(c), durationMs: dur });
+  ev.push({ t: T(c.start), type: 'tool_called', agentId: isSub ? subOf[c.id] : agent, tool: c.name.replace(/^mcp__/, '').slice(0, 40), input: brief(c), durationMs: dur, callId: c.id });
+  if (c.end) ev.push({ t: T(c.end), type: 'tool_returned', agentId: isSub ? subOf[c.id] : agent, callId: c.id, durationMs: c.end - c.start, ok: !c.error });
   if (c.error) { ev.push({ t: T(c.end || c.start), type: 'agent_failed', agentId: isSub ? subOf[c.id] : agent, error: showInputs ? c.error : 'Tool returned an error' }); if (!isSub) failed[agent] = true; }
   else if (isSub && c.end) ev.push({ t: T(c.end), type: 'agent_completed', agentId: subOf[c.id] });
 }

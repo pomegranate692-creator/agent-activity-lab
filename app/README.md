@@ -7,11 +7,35 @@ One shell that combines the three recommended designs plus a new view for the mo
 | Cards (default for 3+ agents) | Card tree: who is doing what, folds finished work | `prototypes/09-card-tree/proto.js`, unchanged |
 | Timeline | Swimlanes: when things happened, who waited on whom | `prototypes/07-swimlanes/proto.js`, unchanged |
 | Result | Contribution river: how every agent fed the outcome. Greyed out until there are outputs or the task finished | `prototypes/05-contribution-river/proto.js`, unchanged |
+| All ten as one | NEW. ALL ten designs merged into one picture as toggleable layers (see below) | `composite.js` |
 | Tool stream (default for 1 to 2 agents) | NEW. Time-ordered list of tool calls, failures, retries, blocks, messages, outputs. Built because a real Claude Code session is mostly one agent making sequential tool calls | `toolstream.js` |
 
 Tool stream has filter chips (All, Problems, Tool calls, Messages & handoffs), an agent picker, and a Group by agent toggle for runs with several agents.
 
 Above the tabs, a **Needs you** strip lists every blocked agent (with its reason) and every failed agent (with its error). Click a pill to select that agent. Selection, playback and speed are shared across all tabs and the inspector on the right.
+
+## All ten as one picture
+
+`app/one.html` (also a tab here) is a single radial map where every earlier design is a layer you can toggle, with the layer number matching the design:
+
+| Layer | Design | What it draws |
+|---|---|---|
+| 01 | Orb web | hub with task progress, delegation threads, message beads in flight |
+| 02 | Hive cells | subagents bud off their parent as hexagons |
+| 03 | Radar | rings = delegation depth |
+| 04 | Routed lattice | dependencies as traces: out along a spoke, around a ring, back in (dashed = still waiting) |
+| 05 | Contribution river | ribbons into the hub; width = time since the agent started (not pure work time); amber tick = blocked |
+| 06 | Floorplan | each main agent's wedge is a room with walls and a name plate (amber/rust walls when something inside is blocked/failed) |
+| 07 | Swimlanes | outer ring is the time axis with blocked/failed/output ticks and a NOW needle; every card has a mini lane |
+| 08 | Territories | each room is tinted by its worst state |
+| 09 | Card tree | main agents are status cards (state text, current tool, outputs) |
+| 10 | Message matrix | inset grid, row sends and column receives |
+
+Derived from state only, so it works on live and replayed events. Tested on the simulated run (12 s and final), the 30-agent stress run, click and keyboard selection, layer toggles, and real-time playback with zero page errors. Limits: with 1 to 2 agents it is nearly empty (use Tool stream); labels are truncated at scale; ribbon width is elapsed time, not effort; it does not group by dependency like the lattice does; the matrix inset hides above 30 agents. `app/all.html` is the other take: a live tile grid of the ten original designs.
+
+## Live mode
+
+With `?live=<adapter url>` and no events yet, the page shows a "Waiting for events" screen with the exact connect steps and the badge reads CONNECTED · WAITING FOR EVENTS (not SIMULATED). Tool stream bars use measured durations when the source reports them (`tool_returned`; real in transcript replays, expected from hook events but unverified), otherwise time until the next action.
 
 ## Run
 
@@ -42,7 +66,7 @@ open 'http://127.0.0.1:7777/app/index.html?live=http://127.0.0.1:7777'
 
 ## Known limits
 
-- Tool stream reads `state.log` (the reducer keeps the last 200 lines). Bar length is the time until the next recorded action, because the event stream carries no tool durations; in a transcript replay idle gaps are compressed, so bars look uniform there.
+- Tool stream reads `state.log` (the reducer keeps the last 200 lines). Bar length is the measured duration when the source reports one (transcript replays do; hook events should but are unverified), otherwise the time until the next recorded action.
 - In a replay, transcripts do not record permission waits, messages or outputs, so Needs you stays empty and Result stays disabled. Real hook events could fill these, but tool-level hook payloads are not yet verified (see `shared/README.md`).
 - Result view is the river as built: unspawned dependencies have no edge until the agent appears, so columns can shift.
 - Stress run: Cards needs vertical scrolling; labels are truncated ids (`REE1`).

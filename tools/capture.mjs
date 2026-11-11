@@ -29,6 +29,7 @@ const selects = (opt('select', '') || '').split(',').filter(Boolean).map((s) => 
 const tabs = (opt('tab', '') || '').split(',').filter(Boolean).map((s) => { const [label, t] = s.split('@'); return { label: label.replace(/_/g, ' '), t: Number(t), done: false }; }); // click a .ap-tab (unified app) by label at scene time
 const rel = path.relative(ROOT, path.resolve(ROOT, target));
 const name = opt('name', path.basename(rel));
+// --page all.html captures a different entry file inside the target folder
 const CHROME = process.env.CHROME_PATH || '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome';
 
 function findFfmpeg() {
@@ -47,7 +48,7 @@ try {
   const page = await browser.newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e))); page.on('console', (m) => { if (m.type() === 'error') errors.push(m.text()); });
-  await page.goto(`http://127.0.0.1:${port}/${rel}/index.html?capture=1&autoplay=0`, { waitUntil: 'load' });
+  await page.goto(`http://127.0.0.1:${port}/${rel}/${opt('page', 'index.html')}?capture=1&autoplay=0`, { waitUntil: 'load' });
   await page.waitForFunction('window.__agentlab && window.__agentlab.player', { timeout: 15000 });
   const duration = await page.evaluate(() => window.__agentlab.player.duration);
   await page.evaluate((sp) => { window.__agentlab.setSpeed(sp); window.__agentlab.play(); }, speed);

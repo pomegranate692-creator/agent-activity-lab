@@ -51,7 +51,7 @@
         seq.forEach(function (l, i) {
           if (grouped && l.agentId !== lastAgent) { lastAgent = l.agentId; var ga = s.agents[l.agentId]; var mine = rows.filter(function (x) { return x.agentId === l.agentId; }); var gh = el('div', 'ts-grp', null, list); el('b', null, ga ? ga.name : 'Unattributed', gh); el('span', null, mine.filter(function (x) { return x.kind === 'tool'; }).length + ' calls' + (mine.some(function (x) { return x.kind === 'failed'; }) ? ' · ' + mine.filter(function (x) { return x.kind === 'failed'; }).length + ' failed' : ''), gh); }
           var a = l.agentId && s.agents[l.agentId];
-          var ai = all.indexOf(l); var next = all[ai + 1]; var gap = Math.max(0, (next ? next.t : s.t) - l.t);
+          var ai = all.indexOf(l); var next = all[ai + 1]; var gap = Math.max(0, (next ? next.t : s.t) - l.t); var measured = l.durationMs != null; if (measured) gap = l.durationMs;
           var r = el('div', 'ts-row ' + l.kind + (l.agentId && l.agentId === sel ? ' sel' : ''), null, list);
           r.setAttribute('role', 'listitem'); if (a) { r.tabIndex = 0; r.setAttribute('aria-label', a.name + ': ' + l.text); }
           el('span', 'ts-t', U.fmtTime(l.t), r);
@@ -67,12 +67,13 @@
           else if (l.kind === 'output') { tool = '▤ output'; input = l.text.replace(/^.*? produced /, ''); }
           el('span', 'ts-tool', tool, r);
           var det = el('span', 'ts-detail', null, r);
-          if (l.kind === 'tool' || l.kind === 'failed' || l.kind === 'blocked') { var b = el('span', 'ts-bar', null, det); b.style.width = Math.round(Math.min(gap, 4000) / 4000 * 140 + 3) + 'px'; b.title = 'Time until the next recorded action: ' + (gap / 1000).toFixed(1) + 's'; }
+          if (l.kind === 'tool' || l.kind === 'failed' || l.kind === 'blocked') { var b = el('span', 'ts-bar', null, det); b.style.width = Math.round(Math.min(gap, 4000) / 4000 * 140 + 3) + 'px'; b.title = (measured ? 'Measured duration: ' : 'Time until the next recorded action: ') + (gap / 1000).toFixed(1) + 's'; if (measured) b.classList.add('measured'); }
           if (input) el('span', 'ts-in', input, det);
           r.title = l.text;
           if (a) { r.onclick = function () { ctx.select(l.agentId); }; r.onkeydown = function (e) { if (e.key === 'Enter') { e.preventDefault(); ctx.select(l.agentId); } }; }
         });
-        note.textContent = 'Bar length = time until the next recorded action (the event stream has no tool durations).' + (s.log.length >= 200 ? ' Showing the most recent 200 log lines.' : '');
+        var nm = all.filter(function (l) { return l.kind === 'tool' && l.durationMs != null; }).length, nt = all.filter(function (l) { return l.kind === 'tool'; }).length;
+        note.textContent = (nm && nm === nt ? 'Bar length = measured tool duration.' : nm ? 'Bar length = measured tool duration where the source reports one (' + nm + ' of ' + nt + '), otherwise time until the next recorded action.' : 'Bar length = time until the next recorded action (this source reports no tool durations).') + (s.log.length >= 200 ? ' Showing the most recent 200 log lines.' : '');
         if (atEnd && !grouped) list.scrollTop = list.scrollHeight;
       }
       return {

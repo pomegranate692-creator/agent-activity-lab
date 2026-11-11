@@ -16,6 +16,15 @@ feed({ hook_event_name: 'Notification', session_id: 's1', message: 'Claude needs
 feed({ hook_event_name: 'PreToolUse', session_id: 's1', tool_name: 'Bash', tool_input: { command: 'npm test' } });
 feed({ hook_event_name: 'PostToolUseFailure', session_id: 's1', tool_name: 'Bash', error: '2 tests failed' });
 feed({ hook_event_name: 'SubagentStop', session_id: 's1', agent_id: 'a-42' });
+// Pre/Post pairing by tool_use_id gives a measured duration (synthetic payloads)
+feed({ hook_event_name: 'PreToolUse', session_id: 's1', tool_use_id: 'tu1', tool_name: 'Read', tool_input: { file_path: 'a.ts' } });
+await new Promise((r) => setTimeout(r, 40));
+const ret = feed({ hook_event_name: 'PostToolUse', session_id: 's1', tool_use_id: 'tu1', tool_name: 'Read', tool_response: {} });
+assert.equal(ret.length, 1); assert.equal(ret[0].type, 'tool_returned'); assert.equal(ret[0].callId, 'tu1'); assert.ok(ret[0].durationMs >= 30 && ret[0].ok === true);
+feed({ hook_event_name: 'PreToolUse', session_id: 's1', tool_use_id: 'tu2', tool_name: 'Bash', tool_input: { command: 'false' } });
+const bad = feed({ hook_event_name: 'PostToolUseFailure', session_id: 's1', tool_use_id: 'tu2', tool_name: 'Bash', error: 'exit 1' });
+assert.ok(bad.some((e) => e.type === 'tool_returned' && e.ok === false) && bad.some((e) => e.type === 'agent_failed'));
+feed({ hook_event_name: 'PostToolUse', session_id: 's1', tool_use_id: 'never-seen', tool_name: 'Read' }); // unmatched Post must not throw or emit
 feed({ hook_event_name: 'Stop', session_id: 's1' });
 
 const types = all.map((e) => e.type);

@@ -75,6 +75,7 @@
 
     function renderBadge(s) {
       if (s.source === 'simulated') setBadge('sim', 'SIMULATED', s.sourceNote || 'Scripted scenario. No real agents are running.');
+      else if (s.source === 'waiting') setBadge('replay', 'CONNECTED · WAITING FOR EVENTS', s.sourceNote || '');
       else if (s.source === 'live-hook') setBadge('live', 'LIVE · hook events', s.sourceNote || '');
       else if (s.source === 'transcript') setBadge('replay', 'REPLAY · transcript', s.sourceNote || '');
       else if (s.source === 'self-reported') setBadge('replay', 'SELF-REPORTED · not verified', s.sourceNote || '');

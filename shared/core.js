@@ -6,7 +6,8 @@
  *   task_started     { task: {id,title,goal} }
  *   agent_spawned    { agentId, name, label, role, parentId, dependsOn: [] }
  *   work_delegated   { fromId, toId, workId, description }
- *   tool_called      { agentId, tool, input, durationMs }
+ *   tool_called      { agentId, tool, input, durationMs, callId? }
+ *   tool_returned    { agentId, callId, durationMs, ok }   (optional: sets the measured duration/outcome on the matching tool_called; adds no log line)
  *   message_sent     { fromId, toId, text }
  *   agent_blocked    { agentId, reason, needs }
  *   agent_unblocked  { agentId, by }
@@ -98,6 +99,11 @@
         a.tool = ev.tool; a.toolInput = ev.input || null; a.toolAt = t; a.toolDuration = ev.durationMs || 0;
         pushRecent(a, t, 'Called ' + ev.tool + (ev.input ? ' (' + ev.input + ')' : ''), 'tool');
         logLine(s, t, a.name + ' called ' + ev.tool + (ev.input ? ' · ' + ev.input : ''), a.id, 'tool');
+        if (ev.callId) s.log[s.log.length - 1].callId = ev.callId;
+        break;
+      case 'tool_returned':
+        for (var q = s.log.length - 1; q >= 0; q--) if (ev.callId && s.log[q].callId === ev.callId) { s.log[q].durationMs = ev.durationMs; s.log[q].ok = ev.ok !== false; break; }
+        a = s.agents[ev.agentId]; if (a && a.tool && ev.durationMs != null) a.toolDuration = ev.durationMs;
         break;
       case 'message_sent':
         s.messages.push({ from: ev.fromId, to: ev.toId, text: ev.text, t: t });

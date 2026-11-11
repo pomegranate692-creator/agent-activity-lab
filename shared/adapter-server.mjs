@@ -36,7 +36,7 @@ export function createHookMapper() {
   // Tool-level events (PreToolUse, PostToolUse, SubagentStart/Stop, PermissionRequest) are mapped from
   // the documented shape and have NOT been verified against a real long session.
   let S;
-  const fresh = () => { S = { started: false, finished: false, t0: null, sub: 0, blocked: {}, spawned: {}, failed: {}, attempts: {} }; };
+  const fresh = () => { S = { started: false, finished: false, t0: null, sub: 0, blocked: {}, spawned: {}, failed: {}, attempts: {}, calls: {} }; };
   fresh();
   const now = () => (S.t0 == null ? 0 : Date.now() - S.t0);
   const brief = (o) => { if (!o) return ''; if (typeof o === 'string') return o.slice(0, 80); const v = o.file_path || o.command || o.pattern || o.url || o.query || o.description || o.prompt || JSON.stringify(o); return String(v).slice(0, 80); };
@@ -53,6 +53,7 @@ export function createHookMapper() {
       out.push({ t: now(), type: 'work_delegated', fromId: 'main', toId: id, workId: 'w-' + id, description: desc || 'Subagent task' }); }
     return id;
   };
+  const ret = (out, p, a, ok) => { const id = p.tool_use_id; if (id && S.calls[id] != null) { out.push({ t: now(), type: 'tool_returned', agentId: a, callId: id, durationMs: now() - S.calls[id], ok }); delete S.calls[id]; } };
   return function map(p) {
     const out = []; const ev = p.hook_event_name;
     if (ev === 'SessionStart') return out; // nothing to draw yet; the task starts at the first prompt
@@ -66,9 +67,10 @@ export function createHookMapper() {
       case 'PreToolUse':
         if (S.failed[a]) { S.failed[a] = false; S.attempts[a] = (S.attempts[a] || 1) + 1; out.push({ t: now(), type: 'agent_retry', agentId: a, attempt: S.attempts[a] }); }
         if (p.tool_name === 'Task' || p.tool_name === 'Agent') { const ti = p.tool_input || {}; spawnSub(out, {}, ti.subagent_type || 'Subagent', ti.description || brief(ti)); }
-        out.push({ t: now(), type: 'tool_called', agentId: a, tool: p.tool_name || 'tool', input: brief(p.tool_input), durationMs: 1000 }); break;
-      case 'PostToolUseFailure': S.failed[a] = true; out.push({ t: now(), type: 'agent_failed', agentId: a, error: String(p.error || (p.tool_response && p.tool_response.error) || 'tool failed').slice(0, 120) }); break;
-      case 'PostToolUse': if (p.tool_response && (p.tool_response.is_error || p.tool_response.error)) { S.failed[a] = true; out.push({ t: now(), type: 'agent_failed', agentId: a, error: String(p.tool_response.error || 'tool error').slice(0, 120) }); } break;
+        if (p.tool_use_id) S.calls[p.tool_use_id] = now();
+        out.push({ t: now(), type: 'tool_called', agentId: a, tool: p.tool_name || 'tool', input: brief(p.tool_input), durationMs: 1000, callId: p.tool_use_id || undefined }); break;
+      case 'PostToolUseFailure': ret(out, p, a, false); S.failed[a] = true; out.push({ t: now(), type: 'agent_failed', agentId: a, error: String(p.error || (p.tool_response && p.tool_response.error) || 'tool failed').slice(0, 120) }); break;
+      case 'PostToolUse': ret(out, p, a, !(p.tool_response && (p.tool_response.is_error || p.tool_response.error))); if (p.tool_response && (p.tool_response.is_error || p.tool_response.error)) { S.failed[a] = true; out.push({ t: now(), type: 'agent_failed', agentId: a, error: String(p.tool_response.error || 'tool error').slice(0, 120) }); } break;
       case 'PermissionRequest': S.blocked[a] = true; out.push({ t: now(), type: 'agent_blocked', agentId: a, reason: ('Waiting for permission: ' + (p.tool_name || 'tool') + ' ' + brief(p.tool_input)).slice(0, 120), needs: 'human approval' }); break;
       case 'Notification': if (/permission|approve|confirm/i.test(p.message || '')) { S.blocked[a] = true; out.push({ t: now(), type: 'agent_blocked', agentId: a, reason: String(p.message).slice(0, 120), needs: 'human approval' }); } break;
       case 'SubagentStart': spawnSub(out, p, p.agent_type, p.agent_type); break;
@@ -82,7 +84,7 @@ export function createHookMapper() {
 
 /* ---------------- server ---------------- */
 export function startServer({ port = 7777, root = ROOT, quiet = false } = {}) {
-  const clients = new Set(); let history = []; let source = 'simulated'; let sourceNote = 'Waiting for events.'; let mapper = createHookMapper(); let simTimers = [];
+  const clients = new Set(); let history = []; let source = 'waiting'; let sourceNote = 'Connected to the adapter. No events have arrived yet; nothing is shown until they do.'; let mapper = createHookMapper(); let simTimers = [];
   const send = (res, obj) => res.write('data: ' + JSON.stringify(obj) + '\n\n');
   const broadcast = (obj) => clients.forEach((c) => send(c, obj));
   const setSource = (s, note) => { if (s !== source || note !== sourceNote) { source = s; sourceNote = note; broadcast({ type: 'meta', source, sourceNote }); } };

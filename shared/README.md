@@ -28,7 +28,8 @@ All events: `{ t: ms, type, ... }`.
 | `task_started` | `task: {id,title,goal}` |
 | `agent_spawned` | `agentId, name, label, role, parentId, dependsOn[]` |
 | `work_delegated` | `fromId, toId, workId, description` |
-| `tool_called` | `agentId, tool, input, durationMs` |
+| `tool_called` | `agentId, tool, input, durationMs, callId?` |
+| `tool_returned` | `agentId, callId, durationMs, ok` (optional; sets the measured duration on the matching `tool_called`, adds no log line) |
 | `message_sent` | `fromId, toId, text` |
 | `agent_blocked` / `agent_unblocked` | `agentId, reason, needs` / `agentId, by` |
 | `agent_failed` / `agent_retry` | `agentId, error` / `agentId, attempt` |
@@ -79,16 +80,30 @@ open 'http://127.0.0.1:7777/prototypes/NN-name/index.html?live=http://127.0.0.1:
 | Path | Status |
 |---|---|
 | Hook payload fields `session_id`, `hook_event_name`, `prompt`, `reason`, `cwd` for SessionStart, UserPromptSubmit, SessionEnd | **Verified**: captured from a real run (`shared/fixtures/real-hook-payloads.jsonl`, test: `node shared/test-real-payloads.mjs`). This found and fixed three mapper bugs (lost task title, session-end reported as "succeeded", 14 s of dead clock). |
-| PreToolUse / PostToolUse / PostToolUseFailure / PermissionRequest / Subagent* payloads | **Not verified**: the real run ended at an auth failure before any tool ran. Mapped from the documented shape (`node shared/test-hook-mapper.mjs`, synthetic). |
+| PreToolUse / PostToolUse / PostToolUseFailure / PermissionRequest / Subagent* payloads (including pairing by `tool_use_id` for measured durations) | **Not verified**: the real run ended at an auth failure before any tool ran. Mapped from the documented shape (`node shared/test-hook-mapper.mjs`, synthetic). |
 | Transcript replay (`tools/transcript-to-events.mjs`) | **Verified** on a real local transcript: 80 tool calls, 2 real tool errors and retries, replayed into prototypes 05, 07 and 09 with the REPLAY badge and no page errors. Transcripts do not record permission waits, messages or outputs, so those are never shown in a replay. |
 
-To capture real hook payloads from a real session without touching your global settings (needs a working `claude` login):
+To capture real hook payloads from a real session without touching your global settings (older route; the installer above is simpler) (needs a working `claude` login):
 
 ```bash
 AGENT_HOOK_LOG=$PWD/live-test/raw.jsonl node shared/adapter-server.mjs --port 7791 &
 claude -p "your task" --settings shared/claude-code-hooks.live-test.json --setting-sources project,local
 ```
 `shared/claude-code-hooks.live-test.json` posts every hook to port 7791 and never blocks Claude Code. To watch every session you would merge its `hooks` block into `~/.claude/settings.json` yourself; I did not edit your settings.
+
+
+### Connect real Claude Code activity (nothing is changed unless you run these)
+
+```bash
+node shared/adapter-server.mjs                       # 1. adapter; badge reads CONNECTED · WAITING until events arrive
+node tools/hooks-install.mjs --log raw-hooks.jsonl   # 2. DRY RUN: shows the exact settings change, writes nothing
+node tools/hooks-install.mjs --log raw-hooks.jsonl --apply   # 3. writes it (project scope by default; --scope user for every session; .bak made)
+# 4. start a NEW Claude Code session and do some work, then:
+open 'http://127.0.0.1:7777/app/index.html?live=http://127.0.0.1:7777'
+node tools/hook-coverage.mjs raw-hooks.jsonl         # 5. which hook events and fields were really seen vs still assumed
+node tools/hooks-install.mjs --remove --apply        # undo: removes only the entries this tool added
+```
+`tools/hook-forward.mjs` is the hook command. It prints nothing and always exits 0, so it cannot block, approve or alter anything in Claude Code, and it gives up after 1.5 s if the adapter is not running. `--log` keeps a local raw copy (prompts and tool inputs can be in there; it never leaves your machine). `hook-coverage.mjs --fixture out.jsonl` writes a redacted copy to commit as a regression fixture.
 
 ## Recording a preview
 

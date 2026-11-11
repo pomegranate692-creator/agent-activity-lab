@@ -31,6 +31,16 @@ Or just open `prototypes/<name>/index.html` in a browser, or run `node shared/ad
 
 `app/` puts Card tree, Swimlanes and Contribution river in one shell with a Tool stream view for single-agent runs and a "Needs you" strip for blocked or failed agents. See [app/README.md](app/README.md).
 
+## All ten as one picture
+
+`app/one.html` merges all ten designs into ONE radial picture. Each design is a layer you can toggle: threads and message beads (01), hive-cell subagents (02), depth rings (03), routed dependency wires (04), river ribbons (05), room walls (06), a time ring (07), region tint (08), status cards (09) and a message matrix inset (10).
+
+<img src="previews/13-all-ten-as-one.png" alt="All ten designs merged into one picture" width="720">
+
+## Real Claude Code activity
+
+`tools/hooks-install.mjs` previews (dry run) and, only if you add `--apply`, writes the Claude Code hooks that feed the viewer; `tools/hook-coverage.mjs` reports which hook events a real log has actually proven. Tool-level hook events are **not yet verified against a real session**. See [shared/README.md](shared/README.md).
+
 ## Which one?
 
 [COMPARISON.md](COMPARISON.md) scores all ten (clarity, appeal, usefulness in real tasks, scale, effort). Short version:
