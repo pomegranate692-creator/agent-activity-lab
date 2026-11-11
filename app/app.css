@@ -80,3 +80,7 @@
 .rs-file { display: flex; gap: 10px; align-items: center; padding: 3px 0; font: 12px var(--mono); color: var(--slate); } .rs-fb { font: 600 13px var(--mono); background: none; border: none; color: var(--acc); cursor: pointer; padding: 2px 0; text-decoration: underline; } .rs-dl { margin-left: auto; font-family: var(--sans); font-size: 12px; text-decoration: none; border: 1px solid var(--mist); border-radius: 6px; padding: 2px 8px; background: #fff; color: var(--ink); }
 
 .ap-pill-act { border-color: var(--ink); background: var(--ink); color: #fff; font-weight: 600; } .ap-pill-act:hover { background: #000; }
+
+.ts-list.has-sel .ts-row:not(.sel) { opacity: .6; } .ts-list.has-sel .ts-row:not(.sel):hover { opacity: 1; }
+
+.ap-ctl .ap-ctl-note { font: 12px/1.5 var(--sans); color: var(--slate); margin-bottom: 6px; } .ap-ctl .ap-cbtn { display: block; width: 100%; text-align: left; margin-bottom: 6px; white-space: normal; } .ap-cdlg { max-width: 520px; }

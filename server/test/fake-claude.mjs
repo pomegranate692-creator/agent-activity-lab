@@ -7,11 +7,26 @@ if (a[0] === '--version') { console.log('0.0.0-test-stub'); process.exit(0); }
 if (a[0] === 'auth') { console.log(JSON.stringify({ loggedIn: process.env.STUB_LOGGED_OUT ? false : true, authMethod: 'stub' })); process.exit(0); }
 const out = (o) => console.log(JSON.stringify(o));
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+const ri = a.indexOf('--resume'); const resumeId = ri >= 0 ? a[ri + 1] : null;
 let prompt = ''; process.stdin.setEncoding('utf8'); for await (const c of process.stdin) prompt += c;
 if (/FAIL_AUTH/.test(prompt)) { process.stderr.write('Failed to authenticate: OAuth session expired and could not be refreshed\n'); process.exit(1); }
+if (resumeId) fs.writeFileSync('resume-args.txt', JSON.stringify({ args: a, prompt }));
 out({ type: 'system', subtype: 'init', session_id: 'stub-session', model: 'stub-model', cwd: process.cwd(), tools: ['Read', 'Write', 'Bash', 'Agent'] });
 const asst = (content, parent = null) => out({ type: 'assistant', message: { role: 'assistant', content }, parent_tool_use_id: parent, session_id: 'stub-session' });
 const user = (content, parent = null) => out({ type: 'user', message: { role: 'user', content }, parent_tool_use_id: parent, session_id: 'stub-session' });
+if (resumeId) { // a follow-up (continue the same conversation): redo / approve flow
+  asst([{ type: 'text', text: 'Continuing the previous work.' }]); await sleep(100);
+  asst([{ type: 'tool_use', id: 'toolu_rw', name: 'Write', input: { file_path: process.cwd() + '/followup-note.txt', content: 'redone\n' } }]); await sleep(100); fs.writeFileSync('followup-note.txt', 'redone\n');
+  user([{ type: 'tool_result', tool_use_id: 'toolu_rw', content: 'File created', is_error: false }]);
+  out({ type: 'result', subtype: 'success', is_error: false, duration_ms: 400, num_turns: 2, result: 'Follow-up done.', total_cost_usd: 0.001, session_id: 'stub-session', permission_denials: [] }); process.exit(0);
+}
+if (/FAIL_SUB/.test(prompt)) {
+  asst([{ type: 'tool_use', id: 'toolu_subF', name: 'Agent', input: { subagent_type: 'flaky-worker', description: 'Do the flaky part' } }]); await sleep(100);
+  asst([{ type: 'tool_use', id: 'toolu_fb', name: 'Bash', input: { command: 'python3 flaky.py' } }], 'toolu_subF'); await sleep(100);
+  user([{ type: 'tool_result', tool_use_id: 'toolu_fb', content: 'ModuleNotFoundError: flaky', is_error: true }], 'toolu_subF');
+  user([{ type: 'tool_result', tool_use_id: 'toolu_subF', content: 'The sub-task could not be completed.', is_error: true }]);
+  out({ type: 'result', subtype: 'success', is_error: false, duration_ms: 500, num_turns: 2, result: 'Finished, but the flaky part failed.', total_cost_usd: 0.002, session_id: 'stub-session', permission_denials: [] }); process.exit(0);
+}
 if (/SLOW/.test(prompt)) { asst([{ type: 'text', text: 'Working slowly.' }]); await sleep(60000); process.exit(0); }
 asst([{ type: 'text', text: 'I will split this: a subagent inspects the data while I write the script.' }]); await sleep(150);
 asst([{ type: 'tool_use', id: 'toolu_sub1', name: 'Agent', input: { subagent_type: 'data-inspector', description: 'Inspect sample.csv columns' } }, { type: 'tool_use', id: 'toolu_w1', name: 'Write', input: { file_path: process.cwd() + '/sample.csv', content: 'a,b\n1,2\n3,4\n' } }]); await sleep(100);

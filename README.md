@@ -27,7 +27,7 @@
 
 | Claim | Evidence |
 |---|---|
-| Service plumbing, security rules, dashboard flow | 57 server checks and 27 app checks pass, using a **test stub** that speaks Claude Code's stream format (labelled TEST STUB; it is not Claude) |
+| Service plumbing, security rules, dashboard flow | 74 server checks and 39 app checks pass, using a **test stub** that speaks Claude Code's stream format (labelled TEST STUB; it is not Claude) |
 | Message mapping on real Claude Code message shapes | tested on 1,552 real transcript lines |
 | **A real Claude Code run end to end** | **not yet verified** (the author's CLI was signed out). `node tools/milestone-check.mjs` runs the first-milestone workflow for real and checks every step |
 | Real subagent delegation, real permission-denial wording | mapped from the documented format, unverified until a real run |

@@ -47,7 +47,36 @@ await p.evaluate(() => [...document.querySelectorAll('.rs-fb:not(.rs-dl)')].find
 await p.evaluate(() => [...document.querySelectorAll('.ap-cbtn')].find((b) => b.textContent === 'History').click()); await sleep(600); ok(await p.evaluate(() => document.querySelectorAll('.ap-hi').length === 1), 'History lists the saved session');
 await p.evaluate(() => document.querySelector('.ap-hi').click()); await sleep(900); ok(await p.evaluate(() => /TEST STUB/.test(document.querySelector('.ac-badge').innerText) && Object.keys(window.__agentlab.state().agents).length === 2), 'reopening a saved session restores it with an honest badge');
 ok(errs.length === 0, 'live flow page errors: ' + errs.join('|'));
+/* selection sync between the Agents view and the Tool stream (shared selection) */
+await tab(p, 'Agents'); await sleep(400);
+await p.evaluate(() => document.querySelector('.cd-card[data-id="main"] .cd-tog')?.click()); await sleep(400); // collapse the main agent's subtree
+ok(await p.evaluate(() => !document.querySelector('.cd-card[data-id="toolu_sub1"]')), 'the subagent card is hidden while its parent is collapsed');
+await tab(p, 'Tool stream'); await sleep(400); await p.evaluate(() => document.querySelector('.ts-row[data-agent="toolu_sub1"]').click()); await sleep(400);
+ok(await p.evaluate(() => /data-inspector/.test(document.querySelector('.ac-ins-name').innerText)), 'clicking a Tool stream row selects that agent in the shared inspector');
+await tab(p, 'Agents'); await sleep(600); ok(await p.evaluate(() => document.querySelector('.cd-card[data-id="toolu_sub1"]')?.classList.contains('sel')), 'the collapsed card is revealed and highlighted in the Agents view');
+await p.evaluate(() => document.querySelector('.cd-card[data-id="main"]').click()); await sleep(300); await tab(p, 'Tool stream'); await sleep(500);
+ok(await p.evaluate(() => document.querySelector('.ts-list').classList.contains('has-sel') && [...document.querySelectorAll('.ts-row.sel')].every((r) => r.dataset.agent === 'main') && document.querySelectorAll('.ts-row.sel').length > 0), 'selecting a card highlights that agent\'s rows in the Tool stream');
+await p.evaluate(() => [...document.querySelectorAll('.ts-chip')].find((c) => /^Only /.test(c.textContent)).click()); await sleep(300);
+ok(await p.evaluate(() => [...document.querySelectorAll('.ts-row')].every((r) => r.dataset.agent === 'main')), '"Only <agent>" filters the Tool stream to the selected agent');
+await p.keyboard.press('Escape'); await sleep(200);
+/* Output: approve a denied action and continue the same conversation */
+await tab(p, 'Output'); await sleep(700); await p.evaluate(() => document.querySelector('.rs-den input').click());
+await p.evaluate(() => [...document.querySelectorAll('.ap-cbtn')].find((b) => /Approve selected and continue/.test(b.textContent)).click()); await sleep(400);
+ok(await p.evaluate(() => document.querySelector('.ap-cdlg')?.open && /WebFetch/.test(document.querySelector('.ap-cdlg').innerText)), 'approve asks for confirmation and names the exact rule');
+await p.evaluate(() => [...document.querySelectorAll('.ap-cdlg button')].find((b) => b.textContent === 'Approve and continue').click()); await sleep(1200);
+ok(await p.evaluate(() => /Running|Succeeded/.test(document.querySelector('.ap-cchip').innerText)), 'approve-and-continue started a linked session'); await sleep(2500);
+/* per-agent retry: a task whose subagent fails */
+await p.click('.ap-cprimary'); await sleep(300); await p.type('.ap-ta', 'FAIL_SUB please run the flaky part'); await p.click('dialog[aria-label="New task"] button[type=submit]'); await sleep(3500);
+await tab(p, 'Agents'); await sleep(500); await p.evaluate(() => document.querySelector('.cd-card[data-id="toolu_subF"]').click()); await sleep(400);
+ok(await p.evaluate(() => /flaky-worker/.test(document.querySelector('.ac-ins-name').innerText) && !![...document.querySelectorAll('.ap-ctl .ap-cbtn')].find((b) => /Retry this agent/.test(b.textContent))), 'the failed subagent offers Retry in the inspector');
+await p.evaluate(() => [...document.querySelectorAll('.ap-ctl .ap-cbtn')].find((b) => /Retry this agent/.test(b.textContent)).click()); await sleep(400);
+ok(await p.evaluate(() => /same conversation/.test(document.querySelector('.ap-cdlg').innerText)), 'retry explains what it will do before running');
+await p.evaluate(() => [...document.querySelectorAll('.ap-cdlg button')].find((b) => b.textContent === 'Retry').click()); await sleep(1500);
+ok(await p.evaluate(() => /Running|Succeeded/.test(document.querySelector('.ap-cchip').innerText)), 'per-agent retry started a linked session'); await sleep(2500);
+await p.evaluate(() => { window.__agentlab.select('main'); }); await sleep(300);
+ok(await p.evaluate(() => /No actions/.test(document.querySelector('.ap-ctl')?.innerText || '')), 'agents that did not fail or get blocked offer no retry or approval');
 await p.evaluate(() => { window.confirm = () => true; }); await p.evaluate(() => [...document.querySelectorAll('.ap-cbtn')].find((b) => b.textContent === 'Retry').click()); await sleep(800);
 ok(await p.evaluate(() => /Running|Succeeded/.test(document.querySelector('.ap-cchip').innerText)), 'Retry starts a new session'); await sleep(3000);
+ok((await fetch(`http://127.0.0.1:${lab.port}/api/sessions`, { headers: { 'x-lab-token': loadToken(home) } }).then((r) => r.json())).sessions.length >= 5, 'every run, retry and follow-up is saved in history');
 console.log(`app test OK: ${n} checks (live flow used the TEST STUB, not a real Claude Code run)`);
 await browser.close(); await lab.close(); fs.rmSync(home, { recursive: true, force: true }); process.exit(0);

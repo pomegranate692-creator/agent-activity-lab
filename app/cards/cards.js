@@ -425,7 +425,9 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
         }
         if (moving || pulsing || edgesDirty) { edgesDirty = false; drawEdges(); }
       },
-      onSelect: function () { render(); },
+      onSelect: function (id) { // selection can come from another view (Tool stream, Needs You, inspector): open collapsed ancestors and bring the card into view
+        if (id && S && S.agents[id]) { var g = 0, p = S.agents[id].parentId, changed = false; while (p && g++ < 100) { if (isCollapsed(p)) { toggles[p] = true; changed = true; } p = S.agents[p] && S.agents[p].parentId; } render(); if (nodes[id]) ensureVisible(id); } else render();
+      },
       onReset: function (s) {
         snap = true; pulses = []; scrollTo = null; prevFinished = false;
         if (!s.order.length) toggles = {};

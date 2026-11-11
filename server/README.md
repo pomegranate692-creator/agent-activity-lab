@@ -35,7 +35,8 @@ node tools/milestone-check.mjs    # optional: runs the first-milestone workflow 
 |---|---|
 | New task / Run, live view, Output (answer, files, denials, stats), History, Retry | works (against the stub; real-Claude run pending sign-in, see below) |
 | Stop | works (SIGTERM, then SIGKILL) |
-| Approve a denied action | **re-run only**: pick denied actions in Output and re-run with them allowed (new session). Approval *during* a run is not supported (headless mode cannot ask) |
+| Approve a denied action | **approve and continue**: from the inspector (agent blocked on a denial) or the Output tab, after the run ends. Continues the SAME Claude Code conversation in the SAME workspace (`--resume`) with exactly the approved rule added, as a new linked session. Only rules that were really denied can be approved; a confirmation names the rule. If the session has no conversation id, it offers a full re-run instead. Approval *during* a run is not supported (headless mode cannot ask) |
+| Retry one agent | from the inspector of a **failed** agent, after the run ends: continues the same conversation and asks Claude Code to redo only that part (the instruction is built by the server from the recorded failure, not from client text). Linked, confirmed, same policy and budget cap |
 | Pause | **not supported** (headless Claude Code cannot be paused; the button is shown disabled) |
 | Concurrent tasks | one at a time |
 
@@ -44,12 +45,13 @@ node tools/milestone-check.mjs    # optional: runs the first-milestone workflow 
 | Claim | Evidence |
 |---|---|
 | Message mapping (tool_use, tool_result, errors, ids) on real Claude Code message shapes | `node server/test-stream-mapper.mjs`: 1,552 real transcript lines, 540 tool calls, every call and result accounted for |
-| Service plumbing: spawn, stream, persist, files, stop, retry/approve, auth failure, security rules | `node server/test-e2e.mjs`: 57 checks using a **test stub** (`server/test/fake-claude.mjs`, labelled TEST STUB everywhere; it is not Claude) |
+| Service plumbing: spawn, stream, persist, files, stop, retry/approve, auth failure, security rules | `node server/test-e2e.mjs`: 74 checks using a **test stub** (`server/test/fake-claude.mjs`, labelled TEST STUB everywhere; it is not Claude) |
 | Dashboard flow in a browser (dialog, run, live views, Output, History) | driven in headless Chrome against the stub, zero page errors |
 | Real not-signed-in path | run against the real CLI: bootstrap reports `loggedIn:false`, the API refuses with `claude auth login` instructions |
 | **A real Claude Code run, end to end** | **NOT YET DONE: the CLI on this machine is not signed in.** Run `claude auth login`, then `node tools/milestone-check.mjs` |
 | `system/init` and `result` objects, `parent_tool_use_id` on subagent messages, the wording of permission-denied tool results | mapped from the documented format; **unverified until a real run** (a denial is also read from the structured `result.permission_denials`) |
 | Real multiagent delegation | mapped (Agent/Task tool call = subagent), **unverified against a real run** |
+| Follow-ups (`--resume`, the conversation id taken from the stream's `session_id`) | exercised with the stub (74 server checks); **whether the real CLI accepts the id from stream-json and resumes it is unverified until a real run** |
 
 ## Files
 

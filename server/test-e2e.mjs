@@ -63,6 +63,31 @@ ok((await api(`/api/sessions/${c.b.id}/retry`, { method: 'POST', body: JSON.stri
 const r2 = await api(`/api/sessions/${c.b.id}/retry`, { method: 'POST', body: JSON.stringify({ confirm: true, approve: ['WebFetch'] }) }); ok(r2.s === 201 && r2.b.retryOf === c.b.id && r2.b.approved[0] === 'WebFetch', 'approve-and-retry creates a linked session');
 await waitDone(r2.b.id);
 
+
+/* ---- per-agent follow-ups: continue the SAME Claude conversation in the SAME workspace ---- */
+const fu = (id, body) => api(`/api/sessions/${id}/followup`, { method: 'POST', body: JSON.stringify(body) });
+ok((await fu(c.b.id, { kind: 'approve', rules: ['WebFetch'] })).b.error.includes('confirm'), 'follow-up needs confirm');
+ok((await fu(c.b.id, { kind: 'approve', rules: ['Bash(rm:*)'], confirm: true })).s === 400, 'follow-up cannot approve a rule that was not denied');
+ok((await fu(c.b.id, { kind: 'approve', rules: [], confirm: true })).s === 400, 'follow-up approve needs at least one rule');
+ok((await fu(c.b.id, { kind: 'retry-agent', agentId: 'toolu_sub1', confirm: true })).s === 400, 'cannot retry an agent that did not fail');
+ok((await fu(c.b.id, { kind: 'retry-agent', agentId: 'nope', confirm: true })).s === 404, 'unknown agent -> 404');
+ok((await fu(c.b.id, { kind: 'rm-rf', confirm: true })).s === 400, 'unknown follow-up kind -> 400');
+const ap = await fu(c.b.id, { kind: 'approve', rules: ['WebFetch'], confirm: true }); ok(ap.s === 201 && ap.b.resumeOf === c.b.id && ap.b.workspace === done.workspace && ap.b.followUp.kind === 'approve', 'approve follow-up reuses the workspace and links to its parent');
+ok((await fu(c.b.id, { kind: 'approve', rules: ['WebFetch'], confirm: true })).s === 409, 'a second task while one runs -> 409');
+const apd = await waitDone(ap.b.id); ok(apd.status === 'succeeded', 'approve follow-up finished');
+const rargs = JSON.parse(fs.readFileSync(path.join(done.workspace, 'resume-args.txt'), 'utf8'));
+ok(rargs.args.includes('--resume') && rargs.args[rargs.args.indexOf('--resume') + 1] === 'stub-session', 'CLI was started with --resume <the original conversation id>');
+ok(rargs.args[rargs.args.indexOf('--allowedTools') + 1].split(',').includes('WebFetch'), 'the approved rule (and only it) was added to the allowlist');
+ok(/WebFetch/.test(rargs.prompt) && /only the denied/i.test(rargs.prompt), 'the follow-up prompt names the approved action');
+const apev = (await api(`/api/sessions/${ap.b.id}/events`)).b.events; const announced = apev.filter((e) => e.type === 'output_produced').map((e) => e.name);
+ok(announced.includes('followup-note.txt') && !announced.includes('analyze_csv.py'), 'only files this follow-up created are announced as its outputs: ' + announced.join());
+const fs1 = await api('/api/sessions', { method: 'POST', body: JSON.stringify({ prompt: 'FAIL_SUB please', confirm: true }) }); const fsd = await waitDone(fs1.b.id);
+const fev = (await api(`/api/sessions/${fs1.b.id}/events`)).b.events; ok(fev.some((e) => e.type === 'agent_failed' && e.agentId === 'toolu_subF'), 'subagent failure is shown on the subagent');
+const rt = await fu(fs1.b.id, { kind: 'retry-agent', agentId: 'toolu_subF', confirm: true }); ok(rt.s === 201 && rt.b.followUp.agentName === 'flaky-worker', 'retry-agent starts a linked follow-up');
+const rtd = await waitDone(rt.b.id); const ra2 = JSON.parse(fs.readFileSync(path.join(fsd.workspace, 'resume-args.txt'), 'utf8')); ok(rtd.status === 'succeeded' && /flaky-worker/.test(ra2.prompt) && /could not be completed/.test(ra2.prompt), 'retry prompt is built by the server from the recorded failure');
+ok((await fu(fs1.b.id, { kind: 'retry-agent', agentId: 'toolu_subF', confirm: true })).s === 201, 'a failed agent of a finished session can be retried again');
+await new Promise((r) => setTimeout(r, 1500));
+
 /* ---- stop ---- */
 const sl = await api('/api/sessions', { method: 'POST', body: JSON.stringify({ prompt: 'SLOW task please', confirm: true }) }); await new Promise((r) => setTimeout(r, 600));
 ok((await api(`/api/sessions/${sl.b.id}/stop`, { method: 'POST', body: '{}' })).s === 200, 'stop accepted'); const st = await waitDone(sl.b.id);

@@ -112,6 +112,7 @@
       if (outs.length) sec('Outputs', outs.join(', '), 'ac-mono');
       var rec = h('div', 'ac-ins-sec', null, inspector); h('div', 'ac-ins-label', 'Recent actions', rec);
       a.recent.slice(-7).reverse().forEach(function (l) { var r = h('div', 'ac-log ac-k-' + l.kind, null, rec); h('span', 'ac-log-t', U.fmtTime(l.t), r); h('span', 'ac-log-x', l.text, r); });
+      if (global.__InspectorExtras) { try { global.__InspectorExtras(a, inspector, s); } catch (e) {} } // optional per-agent controls added by the app (e.g. retry, approve)
     }
 
     function renderFooter(s) {

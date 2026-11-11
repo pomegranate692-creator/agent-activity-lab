@@ -119,6 +119,44 @@
     setMode(); paint(null);
   };
 
+
+  /* ---- confirmation dialog (used before anything that starts a real run) ---- */
+  var cdlg = null;
+  Lab.confirm = function (title, lines, okLabel) {
+    return new Promise(function (resolve) {
+      if (!cdlg) { cdlg = el('dialog', 'ap-dlg ap-cdlg', null, document.body); }
+      cdlg.innerHTML = ''; var f = el('form', null, null, cdlg); f.method = 'dialog'; el('h2', null, title, f);
+      (Array.isArray(lines) ? lines : [lines]).forEach(function (t) { el('p', 'ap-dlg-sub', t, f); });
+      var acts = el('div', 'ap-dlg-acts', null, f); var no = el('button', 'ap-cbtn', 'Cancel', acts); no.type = 'button'; var ok = el('button', 'ap-cbtn ap-cprimary', okLabel || 'Continue', acts); ok.type = 'submit';
+      var done = false; function fin(v) { if (done) return; done = true; try { cdlg.close(); } catch (e) {} resolve(v); }
+      no.onclick = function () { fin(false); }; f.addEventListener('submit', function (e) { e.preventDefault(); fin(true); }); cdlg.addEventListener('close', function () { fin(false); }, { once: true });
+      cdlg.showModal(); ok.focus();
+    });
+  };
+  Lab.followUp = function (sessionId, body) {
+    return call('POST', '/api/sessions/' + sessionId + '/followup', Object.assign({ confirm: true }, body)).then(function (n) { if (Lab.afterConnect) Lab.afterConnect(); connect(n); return n; });
+  };
+  /* per-agent controls in the inspector: only for REAL sessions, only when the run has ended (headless Claude Code cannot be changed mid-run) */
+  g.__InspectorExtras = function (a, inspector) {
+    var m = Lab.current; if (!Lab.available || !m) return;
+    var box = el('div', 'ac-ins-sec ap-ctl', null, inspector); el('div', 'ac-ins-label', 'Controls', box);
+    function note(t) { el('div', 'ap-ctl-note', t, box); }
+    if (m.status === 'running') { note('Controls unlock when the run ends: headless Claude Code cannot be paused or changed mid-run.'); var st = el('button', 'ap-cbtn', 'Stop the run', box); st.type = 'button'; st.onclick = function () { call('POST', '/api/sessions/' + m.id + '/stop', {}).catch(function (e) { alert(e.message); }); }; return; }
+    if (!m.claudeSessionId) { note('This session cannot be continued (it has no Claude Code conversation id). Use Retry in the command bar to start a new run.'); return; }
+    var any = false;
+    if (a.state === 'failed') {
+      any = true; var rb = el('button', 'ap-cbtn', 'Retry this agent’s work', box); rb.type = 'button';
+      rb.onclick = function () { Lab.confirm('Retry ' + a.name + '?', ['Claude Code continues the same conversation in the same workspace and redoes only what “' + a.name + '” failed at (“' + String(a.error || 'an error').slice(0, 160) + '”). Everything that already worked is kept.', 'This starts a new real run, linked to this one, with the same policy (' + m.policy + ') and budget cap.'], 'Retry').then(function (yes) { if (yes) Lab.followUp(m.id, { kind: 'retry-agent', agentId: a.id }).catch(function (e) { alert(e.message); }); }); };
+    }
+    if (a.state === 'blocked' || a.state === 'failed') {
+      (m.denials || []).filter(function (d) { var why = String(a.blockedReason || a.error || ''); return a.state === 'blocked' ? why.indexOf(d.tool) >= 0 : false; }).slice(0, 3).forEach(function (d) {
+        any = true; var ab = el('button', 'ap-cbtn', 'Approve ' + d.rule + ' and continue', box); ab.type = 'button';
+        ab.onclick = function () { Lab.confirm('Approve ' + d.rule + '?', ['Claude Code was denied: ' + d.tool + ' ' + d.input.slice(0, 120), 'Approving continues the same conversation and allows exactly “' + d.rule + '” (nothing else). It starts a new real run, linked to this one.'], 'Approve and continue').then(function (yes) { if (yes) Lab.followUp(m.id, { kind: 'approve', rules: [d.rule] }).catch(function (e) { alert(e.message); }); }); };
+      });
+    }
+    if (!any) note(a.state === 'blocked' ? 'This agent is blocked, but no matching denied action was recorded, so there is nothing to approve. Use Retry in the command bar.' : 'No actions for an agent that is ' + a.state + '. Retry is offered for failed agents; Approve for agents blocked on a denied action.');
+  };
+
   /* ---- Results view (registered like any other view) ---- */
   g.__AppViews.views.push({
     id: 'results', name: 'Output', tagline: 'Final answer, files and denied actions of a real session',
@@ -135,9 +173,11 @@
         if (m.resultText) { el('h3', null, 'Final answer', wrap); el('pre', 'rs-pre', m.resultText, wrap); }
         if (m.status === 'running') el('div', 'rs-note', 'Still running. The answer and files appear here when it finishes.', wrap);
         if (m.denials && m.denials.length) {
-          el('h3', null, 'Actions that were denied (' + m.denials.length + ')', wrap); el('p', 'rs-note', 'Claude Code could not do these without permission. Mid-run approval is not supported yet; you can approve and re-run, which starts a new session.', wrap);
+          el('h3', null, 'Actions that were denied (' + m.denials.length + ')', wrap); el('p', 'rs-note', 'Claude Code could not do these without permission. Approving continues the same conversation with exactly the rules you tick (a new, linked run). Mid-run approval is not possible in headless mode.', wrap);
           var chosen = {}; m.denials.forEach(function (d) { var l = el('label', 'rs-den', null, wrap); var c = el('input', null, null, l); c.type = 'checkbox'; c.onchange = function () { chosen[d.rule] = c.checked; }; var t = el('span', null, null, l); el('b', null, d.tool, t); el('code', null, ' ' + d.input, t); el('i', null, '  → allows: ' + d.rule, t); });
-          var ap = el('button', 'ap-cbtn', 'Approve selected and re-run', wrap); ap.type = 'button'; ap.onclick = function () { var rules = Object.keys(chosen).filter(function (k) { return chosen[k]; }); if (!rules.length) { alert('Tick at least one denied action first.'); return; } if (!confirm('Re-run this task and allow: ' + rules.join(', ') + '?')) return; call('POST', '/api/sessions/' + m.id + '/retry', { confirm: true, approve: rules }).then(function (n) { if (Lab.afterConnect) Lab.afterConnect(true); Lab.connect(n); }).catch(function (e) { alert(e.message); }); };
+          var ap = el('button', 'ap-cbtn', 'Approve selected and continue', wrap); ap.type = 'button'; ap.disabled = m.status === 'running'; ap.title = m.status === 'running' ? 'Available when the run ends' : '';
+          ap.onclick = function () { var rules = Object.keys(chosen).filter(function (k) { return chosen[k]; }); if (!rules.length) { Lab.confirm('Nothing selected', 'Tick at least one denied action first.', 'OK'); return; }
+            Lab.confirm('Approve and continue?', ['Claude Code continues the same conversation and is allowed exactly: ' + rules.join(', ') + '.', 'This starts a new real run, linked to this one.'], 'Approve and continue').then(function (yes) { if (!yes) return; Lab.followUp(m.id, { kind: 'approve', rules: rules }).catch(function (e) { if (e.code === 'no_session_id') Lab.confirm('Cannot continue this session', [e.message, 'Re-run the whole task from scratch with these actions allowed instead?'], 'Re-run').then(function (y2) { if (y2) call('POST', '/api/sessions/' + m.id + '/retry', { confirm: true, approve: rules }).then(function (n) { if (Lab.afterConnect) Lab.afterConnect(true); Lab.connect(n); }).catch(function (e2) { alert(e2.message); }); }); else alert(e.message); }); }); };
         }
         el('h3', null, 'Files (' + (m.files ? m.files.length : 0) + ')', wrap); var fl = el('div', 'rs-files', 'Loading…', wrap); var pv = el('pre', 'rs-pre rs-prev', null, wrap); pv.hidden = true;
         call('GET', '/api/sessions/' + m.id + '/files').then(function (r) { fl.textContent = ''; if (!r.files.length) { el('div', 'rs-note', m.status === 'running' ? 'No files yet.' : 'This task produced no files.', fl); return; }

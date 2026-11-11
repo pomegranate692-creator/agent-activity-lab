@@ -74,7 +74,7 @@ export class SessionManager {
     const out = []; const root = ws;
     (function walk(dir, depth) { if (depth > 6 || out.length >= 500) return; let ents; try { ents = fs.readdirSync(dir, { withFileTypes: true }); } catch { return; }
       for (const e of ents) { if (e.name.startsWith('.') || e.name === 'node_modules' || e.name === '__pycache__') continue; const p = path.join(dir, e.name);
-        if (e.isDirectory()) walk(p, depth + 1); else if (e.isFile()) { let st; try { st = fs.statSync(p); } catch { continue; } out.push({ path: path.relative(root, p), size: st.size }); } } })(root, 0);
+        if (e.isDirectory()) walk(p, depth + 1); else if (e.isFile()) { let st; try { st = fs.statSync(p); } catch { continue; } out.push({ path: path.relative(root, p), size: st.size, mtime: Math.round(st.mtimeMs) }); } } })(root, 0);
     return out.sort((a, b) => a.path.localeCompare(b.path));
   }
   subscribe(id, fn) {
@@ -82,8 +82,46 @@ export class SessionManager {
   }
   running() { return [...this.active.values()].filter((s) => s.meta.status === 'running').map((s) => s.meta); }
 
+  /* ---------- follow-ups: per-agent retry and approval, by continuing the same conversation ---------- */
+  agentStates(events) {
+    const A = {};
+    for (const e of events) {
+      if (e.type === 'agent_spawned') A[e.agentId] = { id: e.agentId, name: e.name, role: e.role, state: 'queued', why: null };
+      else if (A[e.agentId]) { const a = A[e.agentId];
+        if (e.type === 'agent_started' || e.type === 'tool_called' || e.type === 'agent_unblocked' || e.type === 'agent_retry') { a.state = 'working'; a.why = null; }
+        else if (e.type === 'agent_failed') { a.state = 'failed'; a.why = e.error; }
+        else if (e.type === 'agent_blocked') { a.state = 'blocked'; a.why = e.reason; }
+        else if (e.type === 'agent_completed') a.state = 'done'; }
+    }
+    return A;
+  }
+  followUp(parentId, { kind, agentId = null, rules = [] } = {}) {
+    const parent = this.meta(parentId); if (!parent) throw Object.assign(new Error('No such session.'), { status: 404 });
+    const bad = (m, st = 400, code) => Object.assign(new Error(m), { status: st, code });
+    if (parent.status === 'running') throw bad('The session is still running. Headless Claude Code cannot be changed mid-run; stop it or wait for it to finish.', 409);
+    if (!parent.claudeSessionId) throw bad('This session has no Claude Code conversation id (it was recorded before the run produced one), so it cannot be continued. Use Retry to start a new run.', 409, 'no_session_id');
+    if (!fs.existsSync(parent.workspace)) throw bad('The workspace of this session no longer exists.', 409);
+    if (parent.engine !== this.engine) throw bad('This session was run by a different engine and cannot be continued here.', 409);
+    const A = this.agentStates(this.events(parentId) || []);
+    if (kind === 'retry-agent') {
+      const a = A[agentId]; if (!a) throw bad('That agent is not part of the session.', 404);
+      if (a.state !== 'failed') throw bad(`Only a failed agent can be retried; ${a.name} is ${a.state}.`);
+      const why = String(a.why || 'an error').replace(/[\r\n]+/g, ' ').slice(0, 300);
+      const prompt = `Part of the previous work did not succeed. The agent "${a.name}"${a.role ? ' (' + a.role + ')' : ''} failed with: "${why}". Redo only that part now, reusing everything that already succeeded, then make sure the overall task is complete.`;
+      return this.create({ prompt, policy: parent.policy, resumeOf: parentId, followUp: { kind, agentId, agentName: a.name }, retryOf: parentId });
+    }
+    if (kind === 'approve') {
+      if (!rules.length) throw bad('Choose at least one denied action to approve.');
+      const denied = new Set((parent.denials || []).map((d) => d.rule)); const useRules = [];
+      for (const r of rules.slice(0, 5)) { if (!denied.has(r)) throw bad(`"${r}" was not denied in this session, so it cannot be approved.`); useRules.push(r); }
+      const prompt = `You were previously denied permission for: ${useRules.join(', ')}. Permission for exactly these is now granted. Retry only the denied action(s) and finish anything that depended on them, then make sure the overall task is complete.`;
+      return this.create({ prompt, policy: parent.policy, resumeOf: parentId, followUp: { kind, rules: useRules }, extraAllow: useRules, retryOf: parentId });
+    }
+    throw bad('Unknown follow-up kind.');
+  }
+
   /* ---------- create / run ---------- */
-  create({ prompt, policy = 'workspace', retryOf = null, approve = [] } = {}) {
+  create({ prompt, policy = 'workspace', retryOf = null, approve = [], resumeOf = null, followUp = null, extraAllow = [] } = {}) {
     prompt = typeof prompt === 'string' ? prompt.trim() : '';
     if (prompt.length < 3) throw Object.assign(new Error('The task is empty. Describe what you want done.'), { status: 400 });
     if (prompt.length > 8000) throw Object.assign(new Error('The task is longer than 8000 characters.'), { status: 400 });
@@ -94,13 +132,14 @@ export class SessionManager {
       const prev = retryOf && this.meta(retryOf); const ok = new Set(prev ? (prev.denials || []).map((d) => d.rule) : []);
       for (const r of approve) { if (!ok.has(r)) throw Object.assign(new Error(`"${r}" was not denied in the session being retried, so it cannot be approved.`), { status: 400 }); extra.push(r); }
     }
-    const id = crypto.randomUUID(); const dir = path.join(this.sessDir, id); const ws = path.join(this.cfg.workspaceRoot, id);
+    let resumeId = null; let parent = null; if (resumeOf) { parent = this.meta(resumeOf); resumeId = parent && parent.claudeSessionId; extra = extra.concat(extraAllow); }
+    const id = crypto.randomUUID(); const dir = path.join(this.sessDir, id); const ws = parent ? parent.workspace : path.join(this.cfg.workspaceRoot, id);
     const rootReal = fs.realpathSync(this.cfg.workspaceRoot); fs.mkdirSync(ws, { recursive: true, mode: 0o700 });
     const wsReal = fs.realpathSync(ws); // Claude Code reports the resolved path (e.g. /private/tmp on macOS), so use it everywhere
     if (!wsReal.startsWith(rootReal + path.sep)) throw Object.assign(new Error('Workspace escaped the approved root.'), { status: 500 });
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-    const meta = { id, prompt, title: cut(prompt.replace(/\s+/g, ' '), 90), policy, approved: extra, status: 'running', engine: this.engine, createdAt: Date.now(), startedAt: Date.now(), endedAt: null, workspace: wsReal, retryOf, exitCode: null, error: null, resultText: null, denials: [], stats: { toolCalls: 0, subagents: 0, turns: null, costUsd: null, durationMs: null }, files: [], model: null };
-    const s = { meta, events: [], subs: new Set(), child: null, buf: '', tail: '', stopRequested: false, timer: null, dir };
+    const meta = { id, prompt, title: cut(prompt.replace(/\s+/g, ' '), 90), policy, approved: extra, resumeOf, followUp, status: 'running', engine: this.engine, createdAt: Date.now(), startedAt: Date.now(), endedAt: null, workspace: wsReal, retryOf, exitCode: null, error: null, resultText: null, denials: [], stats: { toolCalls: 0, subagents: 0, turns: null, costUsd: null, durationMs: null }, files: [], model: null };
+    const s = { meta, events: [], subs: new Set(), child: null, buf: '', tail: '', stopRequested: false, timer: null, dir, resumeId, pre: parent ? new Map(this.scan(wsReal).map((f) => [f.path, f.mtime])) : null };
     s.mapper = createStreamMapper({ now: () => Date.now() - meta.startedAt, workspace: wsReal, title: meta.title, prompt });
     this.active.set(id, s); this.save(s);
     this.emit(s, s.mapper.begin());
@@ -112,6 +151,7 @@ export class SessionManager {
     const allow = [...pol.allow, ...extra];
     const args = ['-p', '--output-format', 'stream-json', '--verbose', '--permission-mode', 'default', '--allowedTools', allow.join(','), '--disallowedTools', ALWAYS_DENY.join(','), '--setting-sources', 'project,local', '--strict-mcp-config', '--max-budget-usd', String(this.cfg.maxBudgetUsd), '--append-system-prompt', SYSTEM_NOTE];
     if (this.cfg.model) args.push('--model', this.cfg.model);
+    if (s.resumeId) args.push('--resume', s.resumeId); // continue the SAME Claude Code conversation (same workspace)
     let child;
     try { child = spawn(this.cfg.claudeBin, args, { cwd: s.meta.workspace, stdio: ['pipe', 'pipe', 'pipe'], env: process.env }); }
     catch (e) { return this.finish(s, 'failed', `Could not start Claude Code: ${e.message}`); }
@@ -131,11 +171,14 @@ export class SessionManager {
       try { fs.appendFileSync(path.join(s.dir, 'raw.jsonl'), line + '\n'); } catch {}
       let obj; try { obj = JSON.parse(line); } catch { s.tail = (s.tail + '\n' + line).slice(-4000); continue; }
       if (obj.type === 'system' && obj.subtype === 'init') { s.meta.model = obj.model || null; this.save(s); }
-      if (obj.type === 'result') for (const f of this.scan(s.meta.workspace)) this.emit(s, s.mapper.addFile(f.path)); // announce files that exist on disk BEFORE the finish event
+      if (typeof obj.session_id === 'string' && /^[\w-]{8,80}$/.test(obj.session_id) && !s.meta.claudeSessionId) { s.meta.claudeSessionId = obj.session_id; this.save(s); } // needed to continue this conversation later (--resume)
+      if (obj.type === 'result') this.announce(s); // announce files that exist on disk BEFORE the finish event
       this.emit(s, s.mapper.map(obj));
       if (obj.type === 'result') this.noteResult(s, obj);
     }
   }
+  /** Announce files on disk that this session created or changed (files that already existed before a follow-up are not re-announced). */
+  announce(s, files) { for (const f of files || this.scan(s.meta.workspace)) { if (s.pre && s.pre.get(f.path) === f.mtime) continue; this.emit(s, s.mapper.addFile(f.path)); } }
   noteResult(s, r) {
     const m = s.meta; m.resultText = r.result != null ? String(typeof r.result === 'string' ? r.result : JSON.stringify(r.result)).slice(0, 20000) : null;
     m.stats.turns = r.num_turns ?? null; m.stats.costUsd = r.total_cost_usd ?? null; m.stats.durationMs = r.duration_ms ?? null;
@@ -144,7 +187,7 @@ export class SessionManager {
   }
   onExit(s, code) {
     if (s.meta.status !== 'running') return; clearTimeout(s.timer);
-    if (s.buf.trim()) { try { const o = JSON.parse(s.buf); if (o.type === 'result') for (const f of this.scan(s.meta.workspace)) this.emit(s, s.mapper.addFile(f.path)); this.emit(s, s.mapper.map(o)); if (o.type === 'result') this.noteResult(s, o); } catch { s.tail += '\n' + s.buf; } s.buf = ''; }
+    if (s.buf.trim()) { try { const o = JSON.parse(s.buf); if (o.type === 'result') this.announce(s); this.emit(s, s.mapper.map(o)); if (o.type === 'result') this.noteResult(s, o); } catch { s.tail += '\n' + s.buf; } s.buf = ''; }
     s.meta.exitCode = code;
     if (s.stopRequested) return this.finish(s, 'stopped', 'Stopped by you.');
     if (s.timedOut) return this.finish(s, 'failed', `Timed out after ${Math.round(this.cfg.timeoutMs / 60000)} minutes and was stopped.`);
@@ -159,7 +202,7 @@ export class SessionManager {
   finish(s, status, message) {
     const m = s.meta; if (m.status !== 'running') return; clearTimeout(s.timer);
     const files = this.scan(m.workspace); // real files on disk; announce those no Write/Edit call announced
-    for (const f of files) this.emit(s, s.mapper.addFile(f.path));
+    this.announce(s, files);
     if (!s.mapper.stats().finished) this.emit(s, s.mapper.finishWithoutResult(status === 'stopped' ? 'stopped' : 'failed', message || 'ended'));
     else if (message && status !== 'succeeded') m.error = message;
     m.status = status; m.endedAt = Date.now(); m.files = files; if (message && status !== 'succeeded') m.error = message;

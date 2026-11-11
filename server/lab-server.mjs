@@ -88,6 +88,11 @@ export async function startLab({ port = 7777, manager, token, quiet = false } = 
           const c = await manager.probe(); if (!c.found || !c.loggedIn) return send(res, 503, { error: c.detail, code: c.found ? 'not_signed_in' : 'claude_missing' });
           return send(res, 201, manager.create({ prompt: meta.prompt, policy: meta.policy, retryOf: id, approve: Array.isArray(b.approve) ? b.approve.slice(0, 5) : [] }));
         }
+        if (act === 'followup' && req.method === 'POST') {
+          const b = await readJson(req); if (b.confirm !== true) return send(res, 400, { error: 'confirm:true is required' });
+          const c = await manager.probe(); if (!c.found || !c.loggedIn) return send(res, 503, { error: c.detail, code: c.found ? 'not_signed_in' : 'claude_missing' });
+          return send(res, 201, manager.followUp(id, { kind: b.kind, agentId: typeof b.agentId === 'string' ? b.agentId : null, rules: Array.isArray(b.rules) ? b.rules.filter((x) => typeof x === 'string') : [] }));
+        }
         if (act === 'file' && req.method === 'GET') {
           const f = manager.readFile(id, url.searchParams.get('path') || ''); if (!f) return send(res, 404, { error: 'no such file' });
           if (f.tooLarge) return send(res, 413, { error: 'file is larger than 2 MB; open it from the workspace folder', size: f.size });
