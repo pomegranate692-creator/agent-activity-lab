@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Activity Lab: ten ways to watch agents work</title>
+<meta name="description" content="Ten runnable designs for seeing AI agents work: who does what, who hands off to whom, what is blocked, what came out. Pick one and start your own.">
+<style>
+:root{--bg:#EAE8E1;--ink:#1F2528;--slate:#56636A;--line:#B7BCB8;--teal:#1F8A7A;--amber:#B7790A;--card:#F5F3EC}
+@media (prefers-color-scheme: dark){:root{--bg:#1B2022;--ink:#E7E5DE;--slate:#A3AEB3;--line:#3A4448;--teal:#4CC0AE;--amber:#E0A53A;--card:#242B2E}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Inter Tight",system-ui,sans-serif}
+main{max-width:1200px;margin:0 auto;padding:32px 16px 56px}
+h1{font-size:32px;margin:0 0 8px;letter-spacing:-.01em} h2{font-size:20px;margin:32px 0 8px}
+.badge{display:inline-block;border:1px dashed var(--amber);color:var(--amber);border-radius:999px;padding:2px 10px;font:12px Menlo,monospace}
+.lead{max-width:720px;color:var(--ink);margin:4px 0} code{font:13px Menlo,monospace;background:var(--card);padding:2px 6px;border-radius:4px;display:inline-block;margin-top:4px;word-break:break-all}
+pre{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;overflow:auto;font:13px Menlo,monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;margin-top:16px}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+img{width:100%;display:block;background:#fff;aspect-ratio:7/4.4;object-fit:cover}
+figcaption{padding:10px 12px;font-size:14px} figcaption b{display:block;font-size:16px} figcaption span{display:block;color:var(--slate);margin-bottom:8px}
+.btn{display:inline-block;background:var(--teal);color:#fff;text-decoration:none;border-radius:6px;padding:6px 12px;font-weight:600} .btn:focus-visible,summary:focus-visible,a:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+details{margin-top:8px} summary{cursor:pointer;color:var(--slate)}
+a{color:var(--teal)}
+</style></head><body><main>
+<h1>Agent Activity Lab</h1>
+<p class="lead"><span class="badge">SIMULATED</span> Ten runnable designs for <b>watching AI agents work</b>: who is doing what, who handed work to whom, what is waiting or blocked (and why), what failed and recovered, and what came out at the end.</p>
+<p class="lead">All ten replay the same made-up task so you can compare them fairly. Pause, replay, change speed, scrub the timeline, and click any agent to inspect it. Nothing here is live work unless you connect real events, and every design shows a badge that says which it is.</p>
+<h2>Pick one</h2>
+<div class="grid">
+<figure id="01-orb-web"><img loading="lazy" alt="Animated preview of the Orb web design" src="previews/01-orb-web.gif">
+<figcaption><b>01 Orb web</b><span>Hub, threads and arcs. The literal spiderweb.</span>
+<a class="btn" href="prototypes/01-orb-web/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 01-orb-web ../my-agent-view</code></details></figcaption></figure>
+<figure id="02-hive-cells"><img loading="lazy" alt="Animated preview of the Hive cells design" src="previews/02-hive-cells.gif">
+<figcaption><b>02 Hive cells</b><span>Honeycomb; subagents bud off their parent.</span>
+<a class="btn" href="prototypes/02-hive-cells/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 02-hive-cells ../my-agent-view</code></details></figcaption></figure>
+<figure id="03-radar"><img loading="lazy" alt="Animated preview of the Radar design" src="previews/03-radar.gif">
+<figcaption><b>03 Radar</b><span>Rings are delegation depth.</span>
+<a class="btn" href="prototypes/03-radar/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 03-radar ../my-agent-view</code></details></figcaption></figure>
+<figure id="04-routed-lattice"><img loading="lazy" alt="Animated preview of the Routed lattice design" src="previews/04-routed-lattice.gif">
+<figcaption><b>04 Routed lattice</b><span>Chips and wires, like a circuit board.</span>
+<a class="btn" href="prototypes/04-routed-lattice/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 04-routed-lattice ../my-agent-view</code></details></figcaption></figure>
+<figure id="05-contribution-river"><img loading="lazy" alt="Animated preview of the Contribution river design" src="previews/05-contribution-river.gif">
+<figcaption><b>05 Contribution river</b><span>Width is effort, flowing to the result.</span>
+<a class="btn" href="prototypes/05-contribution-river/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 05-contribution-river ../my-agent-view</code></details></figcaption></figure>
+<figure id="06-floorplan"><img loading="lazy" alt="Animated preview of the Floorplan design" src="previews/06-floorplan.gif">
+<figcaption><b>06 Floorplan</b><span>An office with the plumbing showing.</span>
+<a class="btn" href="prototypes/06-floorplan/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 06-floorplan ../my-agent-view</code></details></figcaption></figure>
+<figure id="07-swimlanes"><img loading="lazy" alt="Animated preview of the Swimlanes design" src="previews/07-swimlanes.gif">
+<figcaption><b>07 Swimlanes</b><span>One lane per agent over time.</span>
+<a class="btn" href="prototypes/07-swimlanes/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 07-swimlanes ../my-agent-view</code></details></figcaption></figure>
+<figure id="08-territories"><img loading="lazy" alt="Animated preview of the Territories design" src="previews/08-territories.gif">
+<figcaption><b>08 Territories</b><span>Each agent owns a region of a map.</span>
+<a class="btn" href="prototypes/08-territories/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 08-territories ../my-agent-view</code></details></figcaption></figure>
+<figure id="09-card-tree"><img loading="lazy" alt="Animated preview of the Card tree design" src="previews/09-card-tree.gif">
+<figcaption><b>09 Card tree</b><span>An org chart of status cards.</span>
+<a class="btn" href="prototypes/09-card-tree/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 09-card-tree ../my-agent-view</code></details></figcaption></figure>
+<figure id="10-message-matrix"><img loading="lazy" alt="Animated preview of the Message matrix design" src="previews/10-message-matrix.gif">
+<figcaption><b>10 Message matrix</b><span>Rows send, columns receive.</span>
+<a class="btn" href="prototypes/10-message-matrix/index.html">Open interactive</a>
+<details><summary>Start your own from this</summary><code>node tools/pick.mjs 10-message-matrix ../my-agent-view</code></details></figcaption></figure>
+</div>
+<h2>The combined viewer</h2>
+<p class="lead">One shell with Cards, Timeline, Result and a Tool stream view, plus a &ldquo;Needs you&rdquo; strip for blocked and failed agents. Run <code>node shared/adapter-server.mjs</code>, then open <code>/app/index.html</code>. <a href="app/README.md">Details</a>.</p>
+<h2>Start your own</h2>
+<p class="lead">No build step and no dependencies, only Node 18+ for the small local server.</p>
+<pre>git clone https://github.com/OWNER/agent-activity-lab
+cd agent-activity-lab
+node tools/pick.mjs 09-card-tree ../my-agent-view
+cd ../my-agent-view &amp;&amp; npm start      # http://127.0.0.1:7777</pre>
+<p class="lead">Which should you pick? See <a href="COMPARISON.md">COMPARISON.md</a>. Short version: Card tree for everyday status, Swimlanes for seeing when things happened, Contribution river for how it all fed the result.</p>
+</main></body></html>

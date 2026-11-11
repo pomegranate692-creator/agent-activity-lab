@@ -1,0 +1,29 @@
+/* 04 Routed Lattice: circuit-board view. Everything here sits on the shared mineral theme. */
+.rl-scroll { position: absolute; left: 0; right: 0; top: 0; bottom: 36px; overflow: auto; background: var(--bg); }
+.rl-scroll svg { display: block; width: auto; height: auto; max-width: none; }
+.rl-scroll:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+
+.rl-key { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; display: flex; align-items: center; gap: 13px; padding: 0 14px;
+  border-top: 1px solid var(--line); background: var(--panel); font: 12px var(--mono); color: var(--ink-2); overflow: hidden; white-space: nowrap; }
+.rl-key-i { display: inline-flex; align-items: center; gap: 6px; flex-shrink: 0; }
+.rl-key-i svg { width: 26px; height: 14px; flex-shrink: 0; }
+.rl-key-sp { flex: 1; }
+.rl-zoom { display: inline-flex; align-items: center; gap: 4px; flex-shrink: 0; }
+.rl-zoom button { font: 12px var(--mono); border: 1.5px solid var(--mist); background: transparent; color: var(--ink); border-radius: 6px; padding: 3px 8px; cursor: pointer; }
+.rl-zoom button:hover { background: rgba(31,37,40,.07); }
+.rl-zoom button:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.rl-zoom button.on { border-color: var(--acc); background: var(--acc); color: #fff; }
+
+
+/* SVG parts */
+.rl-name { font: 13px var(--mono); letter-spacing: .02em; fill: var(--ink); pointer-events: none; }
+.rl-name.dim { fill: var(--slate); }
+.rl-pill { font: 12px var(--mono); pointer-events: none; }
+.rl-small { font: 12px var(--mono); fill: var(--slate); pointer-events: none; }
+.rl-term { font: 12px var(--mono); letter-spacing: .1em; fill: var(--ink); pointer-events: none; }
+.rl-term-big { font: 700 15px var(--mono); fill: var(--ink); pointer-events: none; }
+.agent { outline: none; }
+.agent .body { transition: none; }
+.agent:focus-visible .focus-ring { stroke: var(--ink); stroke-width: 2.5; stroke-dasharray: 4 3; opacity: 1; }
+.agent .focus-ring { fill: none; opacity: 0; }
+.rl-empty { font: 14px var(--sans); fill: var(--slate); }

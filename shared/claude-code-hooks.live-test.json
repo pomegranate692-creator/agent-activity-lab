@@ -1,0 +1,129 @@
+{
+ "hooks": {
+  "SessionStart": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "UserPromptSubmit": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "PreToolUse": [
+   {
+    "matcher": "*",
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "PostToolUse": [
+   {
+    "matcher": "*",
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "PostToolUseFailure": [
+   {
+    "matcher": "*",
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "PermissionRequest": [
+   {
+    "matcher": "*",
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "PermissionDenied": [
+   {
+    "matcher": "*",
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "Notification": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "SubagentStart": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "SubagentStop": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "Stop": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ],
+  "SessionEnd": [
+   {
+    "hooks": [
+     {
+      "type": "command",
+      "command": "curl -s -m 2 -X POST http://127.0.0.1:7791/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true"
+     }
+    ]
+   }
+  ]
+ }
+}

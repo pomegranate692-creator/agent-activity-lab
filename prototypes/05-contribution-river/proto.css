@@ -1,0 +1,73 @@
+/* 05 Contribution River: styles for the SVG river. Colours come from shared/theme.css tokens. */
+.rv { user-select: none; }
+.rv text { font-family: var(--mono); }
+.rv .t-sans { font-family: var(--sans); }
+.rv-title { font: 700 16px var(--sans); fill: var(--ink); }
+.rv-head { font: 12px var(--mono); letter-spacing: .1em; fill: #0f5d52; }
+.rv-sub { font: 11px var(--mono); letter-spacing: .04em; fill: var(--slate); }
+.rv-lbl { font: 12px var(--mono); letter-spacing: .08em; fill: var(--ink); }
+.rv-eff { font: 11px var(--mono); fill: var(--slate); }
+.rv-key { font: 11px var(--mono); fill: var(--slate); letter-spacing: .02em; }
+
+/* ribbons */
+.rb { stroke-linejoin: round; transition: opacity .2s; }
+.rb-done { fill: rgba(86,99,106,.17); stroke: rgba(31,37,40,.75); stroke-width: 1; }
+.rb-working { fill: rgba(31,138,122,.24); stroke: var(--acc); stroke-width: 1.2; }
+.rb-blocked { fill: rgba(183,121,10,.28); stroke: var(--amber); stroke-width: 1.2; }
+.rb-failed { fill: rgba(181,71,47,.24); stroke: var(--rust); stroke-width: 1.2; }
+.rb-future { fill: rgba(243,241,234,.5); stroke: var(--slate); stroke-width: 1.2; stroke-dasharray: 5 4; }
+.rb-flow { fill: none; stroke: #0f5d52; stroke-width: 1.6; stroke-linecap: round; stroke-dasharray: 2 13; opacity: .55; }
+.dim { opacity: .38; }
+
+/* bars */
+.bar { stroke: none; }
+.bar-done { fill: var(--ink); } .bar-working { fill: var(--acc); } .bar-blocked { fill: var(--amber); } .bar-failed { fill: var(--rust); }
+.bar-waiting, .bar-queued { fill: #E6E3D8; stroke-width: 1.6; }
+.bar-waiting { stroke: var(--ink); stroke-dasharray: 3 3; }
+.bar-queued { stroke: var(--mist); }
+.ic { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ic-dark { stroke: var(--ink); }
+.ic-fill { fill: #fff; stroke: none; }
+.agent { outline: none; }
+.agent .hit { fill: transparent; }
+.rv-focus, .rv-sel { fill: none; stroke: var(--ink); stroke-width: 2; display: none; }
+.rv-focus { stroke: var(--acc); stroke-width: 2.5; stroke-dasharray: 5 3; }
+.agent:focus-visible .rv-focus { display: block; }
+.agent.sel .rv-sel { display: block; }
+.agent { transition: opacity .2s; }
+.agent.dim { opacity: .55; }
+
+/* callouts */
+.pill { stroke-width: 1.4; }
+.pill-tool { fill: #EAE8E1; stroke: var(--acc); } .pill-tool-t { font: 12px var(--mono); fill: #0f5d52; }
+.pill-blocked { fill: var(--amber); stroke: none; } .pill-failed { fill: var(--rust); stroke: none; }
+.pill-t { font: 11px var(--mono); fill: #fff; letter-spacing: .03em; }
+.pill-t-b { font-weight: 700; }
+.dam { fill: url(#rv-hatch); stroke: var(--amber); stroke-width: 1.6; }
+.eddy { fill: none; stroke: var(--rust); stroke-width: 2.2; stroke-linecap: round; }
+.ring-fx { fill: none; stroke: var(--rust); stroke-width: 2; }
+.ring-fx-ok { fill: none; stroke: var(--acc); stroke-width: 2; }
+.wait-cap { font: 11px var(--mono); fill: var(--slate); }
+
+/* pebbles + release */
+.peb { fill: #F3F1EA; stroke: var(--acc); stroke-width: 1.6; stroke-linejoin: round; }
+.peb-fold { fill: none; stroke: var(--acc); stroke-width: 1.3; }
+.peb-name-bg { fill: #F3F1EA; stroke: var(--acc); stroke-width: 1.2; }
+.peb-name { font: 11px var(--mono); fill: #0f5d52; }
+.rel-box { fill: rgba(243,241,234,.6); stroke: var(--ink); stroke-width: 1.8; stroke-dasharray: 4 3; }
+.rel-box.fin { stroke-dasharray: none; stroke-width: 2.4; }
+.rel-fill { fill: rgba(31,138,122,.32); }
+.rel-t { font: 700 12px var(--mono); letter-spacing: .1em; fill: var(--ink); }
+.rel-sum { font: 11px var(--mono); fill: #0f5d52; }
+
+/* messages */
+.msg-line { fill: none; stroke: var(--slate); stroke-width: 1.4; stroke-dasharray: 2 4; stroke-linecap: round; }
+.msg-dot { fill: var(--ink); }
+.msg-chip { fill: #F3F1EA; stroke: var(--slate); stroke-width: 1; }
+.msg-t { font: 11px var(--sans); fill: var(--ink); }
+.dlg-t { font: 11px var(--sans); fill: var(--slate); font-style: italic; }
+
+/* header gauge */
+.gauge-track { fill: var(--line); } .gauge-fill { fill: var(--acc); }
+
+@media (prefers-reduced-motion: reduce) { .agent, .rb { transition: none; } }

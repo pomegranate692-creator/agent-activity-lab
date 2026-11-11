@@ -1,0 +1,41 @@
+/* Unified viewer shell. Prefix ap- . Uses the shared mineral tokens. */
+.ap-root { position: absolute; inset: 0; display: flex; flex-direction: column; }
+.ap-need { flex: none; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 8px 14px; border-bottom: 1px solid var(--line); background: var(--panel); min-height: 44px; }
+.ap-need-label { font: 11px var(--mono); letter-spacing: .12em; color: var(--slate); margin-right: 4px; }
+.ap-need-none { font: 13px var(--sans); color: var(--slate); }
+.ap-pill { display: inline-flex; align-items: center; gap: 8px; max-width: 100%; padding: 4px 11px 4px 9px; border-radius: 999px; border: 1.5px solid; background: #fff; font: 13px var(--sans); color: var(--ink); cursor: pointer; text-align: left; }
+.ap-pill:hover { background: #faf9f4; } .ap-pill:focus-visible, .ap-tab:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ap-pill b { font: 700 12px var(--mono); letter-spacing: .04em; white-space: nowrap; }
+.ap-pill span.ap-why { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ap-pill-blocked { border-color: var(--amber); } .ap-pill-blocked b { color: #6d4806; }
+.ap-pill-failed { border-color: var(--rust); } .ap-pill-failed b { color: var(--rust); }
+.ap-glyph { flex: none; width: 10px; height: 10px; border-radius: 50%; } .ap-pill-blocked .ap-glyph { background: var(--amber); } .ap-pill-failed .ap-glyph { background: var(--rust); }
+.ap-tabs { flex: none; display: flex; gap: 4px; padding: 8px 14px 0; border-bottom: 1px solid var(--line); }
+.ap-tab { font: 600 14px var(--sans); padding: 7px 14px; border: 1px solid transparent; border-bottom: none; border-radius: 8px 8px 0 0; background: none; color: var(--slate); cursor: pointer; margin-bottom: -1px; }
+.ap-tab[aria-selected=true] { background: var(--bg); color: var(--ink); border-color: var(--line); }
+.ap-tab[aria-disabled=true] { opacity: .5; cursor: not-allowed; }
+.ap-tab small { font: 11px var(--mono); color: var(--slate); margin-left: 6px; }
+.ap-viewport { position: relative; flex: 1; min-height: 0; }
+.ap-view { position: absolute; inset: 0; overflow: hidden; visibility: hidden; pointer-events: none; }
+.ap-view.on { visibility: visible; pointer-events: auto; }
+/* tool stream view */
+.ts-wrap { position: absolute; inset: 0; display: flex; flex-direction: column; background: var(--bg); }
+.ts-head { flex: none; padding: 12px 18px 8px; font: 13px var(--sans); color: var(--slate); display: flex; gap: 14px; flex-wrap: wrap; align-items: baseline; }
+.ts-head b { font: 700 18px var(--sans); color: var(--ink); } .ts-head .ts-rust { color: var(--rust); font-weight: 600; } .ts-head .ts-amber { color: #6d4806; font-weight: 600; }
+.ts-list { flex: 1; overflow: auto; padding: 0 18px 24px; }
+.ts-row { display: grid; grid-template-columns: 58px 92px minmax(150px, 220px) 1fr; gap: 10px; align-items: center; padding: 5px 8px; border-radius: 6px; border: 1px solid transparent; cursor: pointer; min-height: 32px; }
+.ts-row:hover { background: rgba(255,255,255,.55); } .ts-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.ts-row.sel { background: #fff; border-color: var(--mist); }
+.ts-t { font: 12px var(--mono); color: var(--slate); text-align: right; }
+.ts-who { font: 700 11px var(--mono); letter-spacing: .06em; color: var(--ink-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-tool { font: 13px var(--mono); color: var(--ink); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ts-detail { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.ts-bar { flex: none; height: 8px; border-radius: 4px; background: var(--acc); min-width: 3px; }
+.ts-in { font: 12px var(--mono); color: var(--slate); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.ts-row.failed .ts-tool, .ts-row.failed .ts-detail { color: var(--rust); } .ts-row.failed .ts-bar { background: var(--rust); }
+.ts-row.retry { color: var(--slate); } .ts-row.retry .ts-tool { color: var(--slate); font-style: italic; }
+.ts-row.blocked .ts-bar { background: repeating-linear-gradient(45deg, var(--amber) 0 4px, #d9a640 4px 8px); } .ts-row.blocked .ts-tool { color: #6d4806; }
+.ts-row.message .ts-tool { color: var(--acc); }
+.ts-empty { padding: 24px 18px; color: var(--slate); font: 14px var(--sans); }
+.ts-note { flex: none; padding: 6px 18px 10px; font: 12px var(--sans); color: var(--slate); border-top: 1px solid var(--line); }
+@media (prefers-reduced-motion: reduce) { .ts-list { scroll-behavior: auto; } }

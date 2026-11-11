@@ -1,0 +1,95 @@
+/* 01 Orb Web: colours come from shared/theme.css variables. SVG parts are styled here by class. */
+.ow { display: block; width: 100%; height: 100%; user-select: none; }
+.ow text { font-family: var(--mono); }
+
+/* depth rings (delegation level) */
+.ow .ring { fill: none; stroke: #CFCDC4; stroke-width: 1.2; }
+.ow .ring-spoke { stroke: #D9D7CF; stroke-width: 1; }
+
+/* threads: delegation */
+.ow .th { fill: none; stroke-linecap: round; stroke-width: 1.6; stroke: var(--ink); }
+.ow .th.working { stroke: var(--acc); stroke-width: 2.4; }
+.ow .th.done { stroke: var(--ink); }
+.ow .th.waiting, .ow .th.queued { stroke: var(--slate); opacity: .6; }
+.ow .th.blocked-tail { stroke: var(--amber); stroke-width: 2.4; }
+.ow .th.failed { stroke: var(--rust); stroke-width: 2.2; }
+.ow .th.mend { stroke: var(--acc); stroke-width: 2.8; }
+.ow .pulse { stroke: #5fd1bf; stroke-width: 4; stroke-linecap: round; fill: none; }
+.ow .rip { fill: none; stroke: var(--acc); stroke-width: 1.8; }
+
+/* knot */
+.ow .knot-core { fill: var(--amber); stroke: var(--bg); stroke-width: 1.5; }
+.ow .knot-ring { fill: none; stroke: var(--amber); stroke-width: 1.6; }
+
+/* dependencies */
+.ow .dep { fill: none; stroke: var(--slate); stroke-width: 1.5; stroke-dasharray: 5 5; }
+.ow .dep.met { stroke: var(--ink); stroke-dasharray: none; stroke-width: 1.2; opacity: .5; }
+.ow .dep.flash { stroke: var(--acc); stroke-width: 2.6; stroke-dasharray: none; opacity: 1; }
+.ow .dep-open { fill: var(--bg); stroke: var(--slate); stroke-width: 1.5; }
+.ow .dep-met { fill: var(--panel); stroke: var(--ink); stroke-width: 1.2; }
+.ow .dep-tick { fill: none; stroke: var(--ink); stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.ow .dep-arrow { fill: var(--slate); }
+.ow .dep-arrow.met { fill: var(--ink); }
+
+/* messages */
+.ow .msg { fill: none; stroke: var(--acc); stroke-width: 2; stroke-dasharray: 1.5 5; stroke-linecap: round; }
+.ow .bead { fill: var(--acc); stroke: var(--panel); stroke-width: 2; }
+.ow .msg-tag { font-size: 11px; fill: #0f5d52; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+
+/* agents */
+.ow .agent { cursor: pointer; outline: none; }
+.ow .agent .body { stroke-width: 2; }
+.ow .agent .halo { fill: none; stroke-width: 1.6; }
+.ow .agent .selring { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 3 3; display: none; }
+.ow .agent.sel .selring { display: block; }
+.ow .agent .fring { fill: none; stroke: var(--ink); stroke-width: 2.5; display: none; }
+.ow .agent:focus-visible .fring { display: block; }
+.ow .st-working .body { fill: var(--acc); stroke: var(--bg); }
+.ow .st-working .halo { stroke: var(--acc); opacity: .5; }
+.ow .st-done .body { fill: var(--ink); stroke: var(--bg); }
+.ow .st-blocked .body { fill: var(--amber); stroke: var(--bg); }
+.ow .st-blocked .halo { stroke: var(--amber); opacity: .65; }
+.ow .st-failed .body { fill: var(--rust); stroke: var(--bg); }
+.ow .st-waiting .body { fill: var(--panel); stroke: var(--ink); stroke-dasharray: 2 2.6; }
+.ow .st-queued .body { fill: var(--panel); stroke: var(--mist); }
+.ow .glyph { fill: none; stroke: #fff; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.ow .glyph-fill { fill: #fff; }
+.ow .st-blocked .glyph-fill { fill: var(--ink); }
+.ow .att { font-size: 10px; font-weight: 700; fill: var(--rust); paint-order: stroke; stroke: var(--bg); stroke-width: 3px; }
+
+/* labels, pills, chips */
+.ow .lbl { font-size: 12px; letter-spacing: .08em; fill: var(--ink); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; pointer-events: none; }
+.ow .lbl.dim { fill: var(--slate); }
+.ow .lbl.sel { font-weight: 700; }
+.ow .pill-bg { stroke: none; }
+.ow .pill.blocked .pill-bg { fill: var(--amber); }
+.ow .pill.blocked text { fill: var(--ink); }
+.ow .pill.failed .pill-bg { fill: var(--rust); }
+.ow .pill.failed text { fill: #fff; }
+.ow .pill.retry .pill-bg { fill: var(--panel); stroke: var(--acc); stroke-width: 1.5; }
+.ow .pill.retry text { fill: #0f5d52; }
+.ow .pill.tool .pill-bg { fill: var(--panel); stroke: var(--acc); stroke-width: 1.5; }
+.ow .pill.tool text { fill: #0f5d52; font-weight: 400; }
+.ow .pill text { font-size: 11px; font-weight: 700; letter-spacing: .04em; pointer-events: none; }
+
+/* outputs */
+.ow .page { fill: var(--panel); stroke: var(--acc); stroke-width: 1.5; stroke-linejoin: round; }
+.ow .page-ln { fill: none; stroke: var(--acc); stroke-width: 1.3; stroke-linecap: round; }
+.ow .page.release { fill: var(--acc); }
+.ow .out-tag { font-size: 11px; fill: #0f5d52; paint-order: stroke; stroke: var(--bg); stroke-width: 4px; stroke-linejoin: round; }
+
+/* hub */
+.ow .hub-track { fill: none; stroke: var(--mist); stroke-width: 6; }
+.ow .hub-arc { fill: none; stroke: var(--acc); stroke-width: 6; stroke-linecap: butt; }
+.ow .hub-arc.full { stroke-linecap: round; }
+.ow .task-lbl { font-size: 14px; font-weight: 700; letter-spacing: .1em; fill: #0f5d52; paint-order: stroke; stroke: var(--bg); stroke-width: 5px; stroke-linejoin: round; }
+.ow .rel-sock { fill: var(--panel); stroke: var(--slate); stroke-width: 1.5; stroke-dasharray: 2 2.5; }
+.ow .rel-lit { fill: var(--acc); stroke: var(--panel); stroke-width: 2; }
+.ow .rel-lbl { font-size: 12px; letter-spacing: .08em; fill: var(--slate); paint-order: stroke; stroke: var(--bg); stroke-width: 4px; }
+.ow .rel-lbl.lit { fill: #0f5d52; font-weight: 700; }
+
+/* key */
+.ow .key text { font-size: 11px; fill: var(--slate); letter-spacing: .03em; }
+.ow .key .k-title { letter-spacing: .12em; fill: var(--slate); }
+
+@media (prefers-reduced-motion: reduce) { .ow * { transition: none !important; animation: none !important; } }

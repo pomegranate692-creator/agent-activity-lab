@@ -1,0 +1,39 @@
+/* 07 Swimlanes: a live timeline, one lane per agent. All geometry is computed in proto.js from state. */
+.sw { position: absolute; inset: 0; display: grid; grid-template-rows: 60px 1fr 30px; background: var(--bg); }
+.sw-head { display: grid; grid-template-columns: 156px 1fr; border-bottom: 1px solid var(--line); min-width: 0; }
+.sw-prog { padding: 8px 10px 0 14px; min-width: 0; }
+.sw-prog-top { font: 12px var(--mono); letter-spacing: .12em; color: var(--acc); white-space: nowrap; font-weight: 700; }
+.sw-prog-bar { display: block; height: 7px; margin-top: 6px; background: var(--line); border-radius: 4px; overflow: hidden; }
+.sw-prog-fill { display: block; height: 100%; width: 0; background: var(--acc); }
+.sw-prog-title { margin-top: 5px; font: 11px var(--sans); color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sw-axis { cursor: ew-resize; touch-action: none; user-select: none; }
+.ac-stage .sw-axis, .ac-stage .sw-plot { width: auto; height: auto; }
+.sw-body { position: relative; overflow-x: hidden; overflow-y: auto; min-height: 0; scrollbar-width: thin; }
+.sw-inner { position: relative; width: 100%; }
+.sw-labels { position: absolute; left: 0; top: 0; width: 156px; bottom: 0; }
+.sw-plot { position: absolute; left: 156px; top: 0; touch-action: pan-y; user-select: none; cursor: default; }
+.sw-lane { position: absolute; left: 0; width: 156px; display: flex; align-items: center; will-change: transform; }
+.sw-lane.hidden { display: none; }
+.sw-name { flex: 1; min-width: 0; height: 100%; display: flex; align-items: center; gap: 7px; background: transparent; border: 0; padding: 0 4px 0 0; color: var(--ink); font: 12px var(--mono); letter-spacing: .06em; text-align: left; cursor: pointer; border-radius: 4px; }
+.sw-name:focus-visible, .sw-tog:focus-visible, .sw-tool:focus-visible { outline: 2px solid var(--acc); outline-offset: -2px; }
+.sw-name .sw-l { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sw-lane.sel .sw-name { font-weight: 700; }
+.sw-lane.sel::before { content: ""; position: absolute; left: 0; top: 4px; bottom: 4px; width: 3px; border-radius: 2px; background: var(--acc); }
+.sw-lane.child .sw-l { color: var(--ink-2); }
+.sw-tog { flex: 0 0 auto; width: 20px; height: 20px; margin-right: 2px; padding: 0; border: 1px solid var(--mist); border-radius: 5px; background: transparent; color: var(--slate); font: 10px var(--mono); cursor: pointer; }
+.sw-tog.on { width: auto; min-width: 26px; padding: 0 4px; color: var(--ink); border-color: var(--slate); background: var(--panel); }
+.sw-tog-gap { flex: 0 0 22px; }
+.sw-strip { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 14px; border-top: 1px solid var(--line); font: 11px var(--mono); letter-spacing: .05em; color: var(--ink-2); min-width: 0; }
+.sw-leg { display: flex; align-items: center; gap: 16px; min-width: 0; white-space: nowrap; overflow: hidden; }
+.sw-leg span { display: inline-flex; align-items: center; gap: 6px; }
+.sw-tools { display: flex; gap: 4px; flex-shrink: 0; }
+.sw-tool { font: 11px var(--mono); letter-spacing: .04em; padding: 3px 8px; border: 1.5px solid var(--mist); background: transparent; color: var(--ink); border-radius: 6px; cursor: pointer; }
+.sw-tool:hover { background: rgba(31,37,40,.07); }
+.sw-tool.on { border-color: var(--acc); background: var(--acc); color: #fff; }
+.sw-tip { position: absolute; z-index: 5; pointer-events: none; max-width: 300px; padding: 7px 10px; background: var(--ink); color: var(--bg); border-radius: 7px; font: 12px/1.35 var(--sans); box-shadow: 0 4px 14px rgba(31,37,40,.25); display: none; }
+.sw-tip b { display: block; font: 700 11px var(--mono); letter-spacing: .08em; margin-bottom: 2px; }
+.sw-tip .m { font: 11px var(--mono); opacity: .8; }
+.sw-tip.t-msg b { color: #7fd6c7; } .sw-tip.t-block b { color: #f0bd5a; } .sw-tip.t-fail b { color: #f0907a; }
+.sw-empty { position: absolute; left: 190px; top: 30px; font: 13px var(--sans); color: var(--slate); }
+.sw svg text { font-family: var(--mono); }
+@media (prefers-reduced-motion: reduce) { .sw-lane { will-change: auto; } }

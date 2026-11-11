@@ -1,0 +1,11 @@
+{
+  "_comment": "EXAMPLE ONLY. Not applied to your settings. Merge the \"hooks\" block into ~/.claude/settings.json (or a project .claude/settings.json) to forward Claude Code hook events to the adapter server (node shared/adapter-server.mjs). Each hook sends its JSON payload (stdin) to POST /claude-hook and never blocks Claude Code (-m 1, || true). The mapper in shared/adapter-server.mjs has been tested with synthetic payloads only.",
+  "hooks": {
+    "UserPromptSubmit": [{ "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }],
+    "PreToolUse":       [{ "matcher": "*", "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }],
+    "PostToolUse":      [{ "matcher": "*", "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }],
+    "Notification":     [{ "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }],
+    "SubagentStop":     [{ "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }],
+    "Stop":             [{ "hooks": [{ "type": "command", "command": "curl -s -m 1 -X POST http://127.0.0.1:7777/claude-hook -H 'content-type: application/json' -d @- >/dev/null || true" }] }]
+  }
+}

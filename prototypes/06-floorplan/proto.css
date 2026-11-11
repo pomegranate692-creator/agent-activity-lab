@@ -1,0 +1,19 @@
+/* 06 Floorplan: styles for the SVG floorplan. Colours come from shared/theme.css tokens. */
+.fp { display: block; width: 100%; height: 100%; background: var(--bg); }
+.fp text { font-family: var(--mono); }
+.fp .hl { paint-order: stroke; stroke: #F3F1EA; stroke-width: 3.2px; stroke-linejoin: round; }
+.fp .room-title { font-size: 12px; letter-spacing: .14em; fill: var(--slate); font-weight: 600; }
+.fp .room-count { font-size: 11px; letter-spacing: .06em; fill: var(--slate); }
+.fp .dlabel { font-size: 11.5px; letter-spacing: .08em; fill: var(--ink); font-weight: 600; text-anchor: middle; }
+.fp .dsub { font-size: 10.5px; fill: var(--slate); text-anchor: middle; }
+.fp .chip-t { font-size: 10.5px; fill: #0f5d52; text-anchor: middle; font-weight: 600; }
+.fp .call-t { font-size: 10.5px; fill: #fff; text-anchor: middle; font-weight: 600; }
+.fp .msg-t { font-size: 10.5px; fill: #0f5d52; font-weight: 600; }
+.fp .key-t { font-size: 11px; fill: var(--slate); letter-spacing: .04em; }
+.fp .box-t { font-size: 11px; letter-spacing: .14em; fill: var(--slate); text-anchor: middle; font-weight: 600; }
+.fp .box-s { font-size: 10.5px; fill: var(--ink-2); text-anchor: middle; }
+.fp .agent { cursor: pointer; }
+.fp .agent:focus { outline: none; }
+.fp .agent .focus { opacity: 0; }
+.fp .agent:focus-visible .focus { opacity: 1; }
+.fp .agent:hover .plate { stroke: rgba(31, 138, 122, .5); }

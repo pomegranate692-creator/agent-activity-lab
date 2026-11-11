@@ -1,0 +1,18 @@
+/* 03 Radar. Everything drawn here encodes state; there is no decorative sweep. */
+.rd { background: var(--bg); }
+.rd text { font-family: var(--mono); }
+.rd-lbl { font: 600 11px var(--mono); letter-spacing: .06em; fill: var(--ink); paint-order: stroke; stroke: #EAE8E1; stroke-width: 3.5px; stroke-linejoin: round; pointer-events: none; }
+.rd-lbl.compact { font-size: 10px; }
+.rd-lbl.dimmed { fill: var(--slate); }
+.rd-ring-lbl { font: 10px var(--mono); letter-spacing: .12em; fill: var(--slate); paint-order: stroke; stroke: #EAE8E1; stroke-width: 3px; pointer-events: none; }
+.rd-task { font: 700 13px var(--mono); letter-spacing: .1em; fill: var(--acc); text-anchor: middle; pointer-events: none; }
+.rd-pill-t { font: 600 11px var(--mono); letter-spacing: .06em; pointer-events: none; }
+.rd-focus { fill: none; stroke: var(--ink); stroke-width: 2; stroke-dasharray: 3 3; opacity: 0; }
+.agent:focus-visible .rd-focus { opacity: 1; }
+.rd-sel { fill: none; stroke: var(--acc); stroke-width: 2.5; opacity: 0; }
+.agent.sel .rd-sel { opacity: 1; }
+.agent:hover .rd-sel { opacity: .5; } .agent.sel:hover .rd-sel { opacity: 1; }
+.rd-card-t { font: 700 11px var(--mono); letter-spacing: .1em; fill: var(--ink); pointer-events: none; }
+.rd-card-s { font: 11px var(--mono); fill: var(--ink-2); pointer-events: none; }
+.rd-card-m { font: 10px var(--mono); letter-spacing: .08em; fill: var(--slate); pointer-events: none; }
+.rd-empty { font: 14px var(--sans); fill: var(--slate); text-anchor: middle; }

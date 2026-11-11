@@ -1,0 +1,86 @@
+/* 09 Card Tree: delegation as an org chart of status-report cards. */
+:root { --card: #F4F2EC; --acc-ink: #0f5d52; --amber-ink: #8c5d05; --rust-ink: #9a3a25; }
+
+.ct-scroll { position: absolute; inset: 0 0 28px 0; overflow: auto; background: var(--bg); scrollbar-gutter: stable; }
+.ct-canvas { position: relative; min-width: 100%; min-height: 100%; }
+.ct-under, .ct-over { position: absolute; left: 0; top: 0; pointer-events: none; overflow: visible; }
+.ct-canvas > svg.ct-under, .ct-canvas > svg.ct-over { width: auto; height: auto; }
+.ct-under { z-index: 0; } .ct-over { z-index: 8; }
+
+/* ---------- cards ---------- */
+.ct-card { --cb: var(--card); position: absolute; left: 0; top: 0; width: 240px; z-index: 2; box-sizing: border-box;
+  border: 1.5px solid var(--ink); border-radius: 8px; background: var(--cb); cursor: pointer; outline: none; overflow: visible;
+  font-family: var(--mono); color: var(--ink); will-change: transform; user-select: none; }
+.ct-card:focus-visible { outline: 2px solid var(--ink); outline-offset: 3px; z-index: 6; }
+.ct-card.sel { z-index: 5; box-shadow: 0 0 0 3px rgba(31,138,122,.42); }
+.ct-card.rel { box-shadow: 0 0 0 2px rgba(31,37,40,.28); }
+.ct-card.collapsed { box-shadow: 5px 5px 0 0 #E1DFD6, 5px 5px 0 1.5px var(--mist); }
+.ct-card.collapsed.sel { box-shadow: 5px 5px 0 0 #E1DFD6, 5px 5px 0 1.5px var(--mist), 0 0 0 3px rgba(31,138,122,.42); }
+.ct-bar { position: absolute; left: 0; top: 0; bottom: 0; width: 8px; border-radius: 6px 0 0 6px; background: var(--ink); }
+.ct-glyph { position: absolute; left: 11px; top: 50%; margin-top: -15px; width: 30px; height: 30px; }
+.ct-glyph svg { width: 30px; height: 30px; display: block; }
+.ct-body { padding: 7px 8px 6px 46px; min-width: 0; }
+.ct-row1 { display: flex; align-items: center; gap: 6px; height: 18px; min-width: 0; }
+.ct-name { flex: 0 1 auto; min-width: 0; font-weight: 700; font-size: 13px; line-height: 18px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ct-row2 { display: flex; align-items: flex-start; gap: 6px; margin-top: 1px; }
+.ct-retry { flex: none; margin-right: auto; font-size: 11px; font-weight: 700; color: var(--rust-ink); line-height: 18px; }
+.ct-retry:empty { display: none; }
+.ct-chip { flex: 0 1 auto; display: inline-flex; align-items: center; gap: 3px; font-size: 11px; color: var(--acc-ink); max-width: 100px; min-width: 14px; line-height: 16px; margin-left: auto; }
+.ct-chip:empty { display: none; }
+.ct-chip svg { flex: none; width: 12px; height: 14px; }
+.ct-chip span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ct-chip.pop { animation: none; }
+.ct-tog { flex: none; display: inline-flex; align-items: center; gap: 3px; height: 18px; padding: 0 6px 0 4px; border: 1px solid var(--mist); border-radius: 9px; background: transparent;
+  font: 11px var(--mono); color: var(--ink); cursor: pointer; line-height: 1; }
+.ct-tog:hover { background: rgba(31,37,40,.08); }
+.ct-tog:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ct-tog:empty { display: none; }
+.ct-tog svg { width: 9px; height: 9px; flex: none; display: block; }
+.ct-tog .mini { width: 11px; height: 11px; }
+.ct-card.collapsed .ct-tog { border-color: var(--slate); background: #E8E6DE; font-weight: 700; }
+.ct-status { flex: 1 1 auto; min-width: 0; font-size: 12px; line-height: 16px; color: var(--slate); overflow: hidden; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 1; line-clamp: 1; overflow-wrap: anywhere; }
+.ct-card.tall .ct-status { -webkit-line-clamp: 2; line-clamp: 2; }
+.ct-tool { position: absolute; left: 8px; right: 6px; bottom: 0; height: 3px; border-radius: 2px; background: transparent; overflow: hidden; }
+.ct-tool i { display: block; height: 100%; width: 0; background: var(--acc); opacity: .55; }
+
+.ct-card.st-working { border-color: var(--acc); } .ct-card.st-working .ct-bar { background: var(--acc); } .ct-card.st-working .ct-status { color: var(--acc-ink); }
+.ct-card.st-done { border-color: var(--ink); } .ct-card.st-done .ct-bar { background: var(--ink); }
+.ct-card.st-blocked { --cb: #F5EAD0; border-color: var(--amber); } .ct-card.st-blocked .ct-bar { background: var(--amber); } .ct-card.st-blocked .ct-status { color: var(--amber-ink); }
+.ct-card.st-failed { --cb: #F3DDD6; border-color: var(--rust); } .ct-card.st-failed .ct-bar { background: var(--rust); } .ct-card.st-failed .ct-status { color: var(--rust-ink); }
+.ct-card.st-waiting, .ct-card.st-queued { --cb: #EAE8E1; border-style: dashed; border-color: var(--ink); } .ct-card.st-waiting .ct-bar, .ct-card.st-queued .ct-bar { background: var(--cb); }
+.ct-card.st-queued { border-color: var(--slate); }
+.ct-card.st-waiting .ct-status { color: var(--slate); }
+.g-in { stroke: var(--cb); }
+
+/* ---------- task header + counts (above/below the root card) ---------- */
+.ct-task { position: absolute; width: 240px; z-index: 1; pointer-events: none; }
+.ct-task-title { font: 700 14px var(--sans); letter-spacing: -.01em; line-height: 17px; margin-bottom: 4px; }
+.ct-task-pct { font: 12px var(--mono); letter-spacing: .12em; color: var(--acc-ink); text-transform: uppercase; }
+.ct-task-bar { height: 4px; border-radius: 2px; background: var(--line); margin-top: 4px; overflow: hidden; }
+.ct-task-bar i { display: block; height: 100%; background: var(--acc); }
+.ct-counts { position: absolute; width: 240px; z-index: 1; font: 11px var(--mono); color: var(--slate); line-height: 15px; pointer-events: none; }
+
+/* ---------- RESULT card ---------- */
+.ct-result { position: absolute; z-index: 2; border: 1.5px solid var(--acc); border-radius: 8px; background: var(--card); padding: 12px 14px 12px 20px; font-family: var(--mono); }
+.ct-result::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 8px; border-radius: 6px 0 0 6px; background: var(--acc); }
+.ct-result.bad { border-color: var(--rust); } .ct-result.bad::before { background: var(--rust); }
+.ct-result-h { font: 12px var(--mono); letter-spacing: .14em; color: var(--acc-ink); text-transform: uppercase; }
+.ct-result.bad .ct-result-h { color: var(--rust-ink); }
+.ct-result-s { font: 13px/1.4 var(--sans); color: var(--ink-2); margin: 4px 0 10px; }
+.ct-result-list { display: flex; flex-wrap: wrap; gap: 6px; }
+.ct-out { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--mist); border-radius: 6px; background: #fff8; padding: 3px 8px 3px 6px; font: 12px var(--mono); color: var(--ink); cursor: pointer; max-width: 100%; }
+.ct-out:hover { background: rgba(31,138,122,.1); border-color: var(--acc); }
+.ct-out:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.ct-out svg { width: 12px; height: 14px; flex: none; }
+.ct-out em { font-style: normal; color: var(--slate); }
+
+/* ---------- legend (non-interactive key to the line styles) ---------- */
+.ct-legend { position: absolute; left: 0; right: 0; bottom: 0; height: 28px; z-index: 9; display: flex; align-items: center; gap: 18px; padding: 0 16px; overflow: hidden; white-space: nowrap;
+  background: var(--panel); border-top: 1px solid var(--line); font: 11px var(--mono); color: var(--ink-2); pointer-events: none; }
+.ct-legend span { display: inline-flex; align-items: center; gap: 7px; }
+.ct-legend svg { width: 36px; height: 10px; flex: none; }
+.ct-lg-tog { font-weight: 700; border: 1px solid var(--slate); border-radius: 9px; padding: 1px 6px; background: #E8E6DE; }
+.ct-lg-stack { display: inline-block; width: 16px; height: 10px; border: 1.5px solid var(--ink); border-radius: 3px; background: var(--card); box-shadow: 3px 3px 0 0 #E1DFD6, 3px 3px 0 1.5px var(--mist); margin-right: 3px; }
+.ct-empty { position: absolute; left: 28px; top: 28px; font: 14px var(--sans); color: var(--slate); }
+
+@media (prefers-reduced-motion: reduce) { .ct-card { will-change: auto; } }

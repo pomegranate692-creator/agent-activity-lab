@@ -1,0 +1,11 @@
+.tpl { padding: 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(210px, 1fr)); gap: 12px; align-content: start; height: 100%; overflow: auto; }
+.tpl-card { border: 1.5px solid var(--mist); border-radius: 10px; padding: 12px 14px; background: var(--panel); cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .25s; text-align: left; font: inherit; color: inherit; }
+.tpl-card:focus-visible { outline: 2px solid var(--acc); outline-offset: 2px; }
+.tpl-card.sel { box-shadow: 0 0 0 3px rgba(31,138,122,.35); }
+.tpl-card.working { border-color: var(--acc); } .tpl-card.blocked { border-color: var(--amber); background: #f3ead2; } .tpl-card.failed { border-color: var(--rust); background: #f1ded8; }
+.tpl-card.done { border-color: var(--ink); } .tpl-card.waiting { border-style: dashed; border-color: var(--ink); }
+.tpl-card.pop { transform: scale(1.03); }
+.tpl-name { font: 700 16px var(--sans); display: flex; align-items: center; gap: 8px; } .tpl-sub { font: 12px var(--mono); color: var(--slate); margin-top: 6px; min-height: 16px; }
+.tpl-card.working .tpl-sub { color: var(--acc); } .tpl-card.blocked .tpl-sub { color: #8c5d05; } .tpl-card.failed .tpl-sub { color: var(--rust); }
+.tpl-empty { color: var(--slate); font: 14px var(--sans); padding: 24px; }
+@media (prefers-reduced-motion: reduce) { .tpl-card { transition: none; } }

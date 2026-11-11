@@ -1,0 +1,122 @@
+[
+ {
+  "num": "01",
+  "name": "Orb web",
+  "title": "The task sits at the hub.",
+  "caption": "Threads carry the work. Pull one and you can see what moves.",
+  "notes": [
+   "Task & progress: the hub ring fills as agents finish. 4 of 12 done.",
+   "Agents & subagents: main agents sit on spokes; subagents hang further out on their parent's thread.",
+   "Delegation, waiting, messages, tools: spokes delegate, dashed arcs mean waits-for, dotted green threads are messages, chips name the live tool.",
+   "Blocked, failed, outputs: amber tag says what is needed, rust tag shows the failure and the retry, page glyphs are outputs."
+  ]
+ },
+ {
+  "num": "02",
+  "name": "Hive cells",
+  "title": "Every agent holds a cell.",
+  "caption": "A territory view: who owns which cell, and what state it is in.",
+  "notes": [
+   "Task & progress: the queen cell is the orchestrator; its ring is task progress.",
+   "Agents & subagents: full cells are main agents; small satellite cells are their subagents.",
+   "Delegation, waiting, messages, tools: adjacency and solid links delegate, dashed lines wait, dotted green lines message.",
+   "Blocked, failed, outputs: cell fill carries the state; callouts say why; page glyphs sit on the cell that made them."
+  ]
+ },
+ {
+  "num": "03",
+  "name": "Radar",
+  "title": "Distance from the task.",
+  "caption": "Rings are delegation depth. Angle groups related work. Green trails show who moved recently.",
+  "notes": [
+   "Task & progress: the outer ring fills clockwise with finished agents.",
+   "Agents & subagents: depth 1 agents ring the center; subagents sit on depth 2 behind their parent.",
+   "Delegation, waiting, messages, tools: radial lines delegate, dashed chords wait, dotted green chords are messages.",
+   "Blocked, failed, outputs: blips change glyph and callout; page glyphs mark outputs."
+  ]
+ },
+ {
+  "num": "04",
+  "name": "Routed lattice",
+  "title": "Handoffs run on the grid.",
+  "caption": "Right angles only, like a circuit board. Everything that moves has a wire.",
+  "notes": [
+   "Task & progress: the task starts at the left edge; the right edge is the final release.",
+   "Agents & subagents: chips on the grid; subagents branch off their parent's wire.",
+   "Delegation, waiting, messages, tools: grey rails delegate, dashed wires wait, green wires with a packet are messages.",
+   "Blocked, failed, outputs: a blocked or failed chip has a labelled callout; page glyphs sit on the chip's output side."
+  ]
+ },
+ {
+  "num": "05",
+  "name": "Contribution river",
+  "title": "How everything feeds the result.",
+  "caption": "Width is effort. Follow the river from the plan to the final release.",
+  "notes": [
+   "Task & progress: the river runs left to right; the empty channel on the right is the unfinished result.",
+   "Agents & subagents: bars are agents; subagents join the river as side streams.",
+   "Delegation, waiting, messages, tools: ribbons are contributions; dashed ribbons are work not yet flowing.",
+   "Blocked, failed, outputs: an amber bar is a dam, a rust bar is an eddy; page glyphs are outputs dropped along the way."
+  ]
+ },
+ {
+  "num": "06",
+  "name": "Floorplan",
+  "title": "An office, with the plumbing showing.",
+  "caption": "Rooms are workstreams. Desks hold agents. Documents pile up on the desks that made them.",
+  "notes": [
+   "Task & progress: the clock in Command shows task progress.",
+   "Agents & subagents: desks in a room; subagents share their parent's room.",
+   "Delegation, waiting, messages, tools: dashed lines show who waits for whom, dotted green lines are messages, chips name the live tool.",
+   "Blocked, failed, outputs: callouts say what is needed or what failed; the dashed outbox is the unfinished result."
+  ]
+ },
+ {
+  "num": "07",
+  "name": "Swimlanes",
+  "title": "Time, one lane per agent.",
+  "caption": "A timeline of the whole run. The dashed line is now; everything to its right is still planned.",
+  "notes": [
+   "Task & progress: the NOW line against the full run length, plus the percent done.",
+   "Agents & subagents: one lane each, subagents sit directly under their parent.",
+   "Delegation, waiting, messages, tools: curves are handoffs, dotted green curves are messages, dotted lane segments are waiting.",
+   "Blocked, failed, outputs: amber hatched bars are blocked, rust bars failed, page glyphs mark each output when it appeared."
+  ]
+ },
+ {
+  "num": "08",
+  "name": "Territories",
+  "title": "Every agent owns a patch.",
+  "caption": "A map. States color the land. Lines show how the territories depend on each other.",
+  "notes": [
+   "Task & progress: the share of the map already claimed.",
+   "Agents & subagents: a main agent owns a region; its subagents live inside it.",
+   "Delegation, waiting, messages, tools: dashed lines are waits-for, dotted green lines are messages, chips name the live tool.",
+   "Blocked, failed, outputs: region tint and callouts; page glyphs sit on the seed that produced them."
+  ]
+ },
+ {
+  "num": "09",
+  "name": "Card tree",
+  "title": "Delegation, as an org chart.",
+  "caption": "Cards say what each agent is doing in words, so you can read the run like a status report.",
+  "notes": [
+   "Task & progress: the orchestrator card at the left root, with percent done.",
+   "Agents & subagents: columns are depth; subagent cards sit to the right of their parent.",
+   "Delegation, waiting, messages, tools: elbows delegate, dashed arcs on the right are waits-for, dotted green arcs are messages.",
+   "Blocked, failed, outputs: each card states why in words; page glyphs sit on the card's corner."
+  ]
+ },
+ {
+  "num": "10",
+  "name": "Message matrix",
+  "title": "Who is talking to whom.",
+  "caption": "A table of every relationship: rows send, columns receive. The diagonal shows each agent's own state.",
+  "notes": [
+   "Task & progress: the line above the matrix summarizes progress and message count.",
+   "Agents & subagents: rows and columns are the same twelve agents.",
+   "Delegation, waiting, messages, tools: solid outline is delegation, dashed outline is waits-for, a green cell is a message.",
+   "Blocked, failed, outputs: the diagonal carries each agent's state glyph; page glyphs in the right column are outputs."
+  ]
+ }
+]

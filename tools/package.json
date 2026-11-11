@@ -1,0 +1,2 @@
+{ "name": "agent-activity-lab-tools", "private": true, "type": "module", "version": "0.1.0",
+  "description": "Capture + dev server for the agent activity prototypes", "dependencies": { "puppeteer-core": "^24.0.0" } }
