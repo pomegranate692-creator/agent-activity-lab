@@ -33,7 +33,8 @@ node tools/milestone-check.mjs    # optional: runs the first-milestone workflow 
 
 | Control | State |
 |---|---|
-| New task / Run, live view, Output (answer, files, denials, stats), History, Retry | works (against the stub; real-Claude run pending sign-in, see below) |
+| New task / Run, live view, Output (answer, files, denials, stats), History | **works with real Claude Code** (verified, see below) |
+| Retry | works with the stub; not yet exercised with a real run |
 | Stop | works (SIGTERM, then SIGKILL) |
 | Approve a denied action | **approve and continue**: from the inspector (agent blocked on a denial) or the Output tab, after the run ends. Continues the SAME Claude Code conversation in the SAME workspace (`--resume`) with exactly the approved rule added, as a new linked session. Only rules that were really denied can be approved; a confirmation names the rule. If the session has no conversation id, it offers a full re-run instead. Approval *during* a run is not supported (headless mode cannot ask) |
 | Retry one agent | from the inspector of a **failed** agent, after the run ends: continues the same conversation and asks Claude Code to redo only that part (the instruction is built by the server from the recorded failure, not from client text). Linked, confirmed, same policy and budget cap |
@@ -42,16 +43,22 @@ node tools/milestone-check.mjs    # optional: runs the first-milestone workflow 
 
 ## Verification status (what is proven, precisely)
 
+Verified on 2026-11-10 with Claude Code 2.1.263 (model claude-sonnet-5), signed in with a claude.ai account.
+
 | Claim | Evidence |
 |---|---|
-| Message mapping (tool_use, tool_result, errors, ids) on real Claude Code message shapes | `node server/test-stream-mapper.mjs`: 1,552 real transcript lines, 540 tool calls, every call and result accounted for |
-| Service plumbing: spawn, stream, persist, files, stop, retry/approve, auth failure, security rules | `node server/test-e2e.mjs`: 74 checks using a **test stub** (`server/test/fake-claude.mjs`, labelled TEST STUB everywhere; it is not Claude) |
-| Dashboard flow in a browser (dialog, run, live views, Output, History) | driven in headless Chrome against the stub, zero page errors |
-| Real not-signed-in path | run against the real CLI: bootstrap reports `loggedIn:false`, the API refuses with `claude auth login` instructions |
-| **A real Claude Code run, end to end** | **NOT YET DONE: the CLI on this machine is not signed in.** Run `claude auth login`, then `node tools/milestone-check.mjs` |
-| `system/init` and `result` objects, `parent_tool_use_id` on subagent messages, the wording of permission-denied tool results | mapped from the documented format; **unverified until a real run** (a denial is also read from the structured `result.permission_denials`) |
-| Real multiagent delegation | mapped (Agent/Task tool call = subagent), **unverified against a real run** |
-| Follow-ups (`--resume`, the conversation id taken from the stream's `session_id`) | exercised with the stub (74 server checks); **whether the real CLI accepts the id from stream-json and resumes it is unverified until a real run** |
+| **A real Claude Code run end to end** | `node tools/milestone-check.mjs` passed (real session, 3 tool calls, the generated script ran on a sample CSV, session saved). The same CSV task was then run **through the app** twice (Run button, Card tree, Tool stream, Output, History): both sessions succeeded, produced a working script and `sample.csv`, and were saved |
+| Real `system/init` (session_id, model, permissionMode), `result` (subtype, is_error, num_turns, total_cost_usd, duration_ms, permission_denials) and the `parent_tool_use_id` key on messages | read from the recorded raw streams; two redacted real runs are regression fixtures (`server/fixtures/real-claude-run*.jsonl`, `node server/test-real-stream.mjs`) |
+| Real-only stream objects (`thinking_tokens`, `rate_limit_event`, `task_summary`, `post_turn_summary`) | present in real runs and safely ignored |
+| Real permission-denial wording | seen twice: "Permission to use Bash with command ... has been denied." and "Output redirection to ... was blocked. For security, Claude Code may only write to files in the allowed working directories". Both show as **blocked**, not failed, and match the structured `result.permission_denials` |
+| Bugs found only by real runs, now fixed and tested | tool paths arrive as `./file` (files were announced twice); the blocked-redirect wording was shown as a failure; the app played the scripted demo behind a live service |
+| Message mapping on real message shapes | `node server/test-stream-mapper.mjs`: 1,552 real transcript lines |
+| Service plumbing, security rules, follow-ups, dashboard flow | `node server/test-e2e.mjs` (74 checks) and `node tools/app-test.mjs` (39 checks) using a **test stub** (labelled TEST STUB; not Claude) |
+| **Real subagent delegation** (`parent_tool_use_id` set on a subagent's messages, the Agent/Task tool call shape, a subagent's final report) | **NOT verified**: neither real run used a subagent (`subagent_stats.spawned` was 0). Mapped from the documented format; exercised only with the stub |
+| **Follow-ups** (`--resume` with the conversation id from the stream's `session_id`; per-agent retry; approve and continue) | **NOT verified against the real CLI**: the id is captured from real runs, but no real follow-up has been run yet |
+| Stop, Retry with the real CLI | not yet exercised against a real run |
+
+Observed in real runs: Claude Code is denied shell redirection (`> file`) and `rm` under the Workspace policy and works around it with the Write tool; the dashboard shows that as blocked then unblocked ("agent continued without the denied action"), and lists the denied actions in Output. A real task costs roughly $0.10 to $0.25 (budget cap $2).
 
 ## Files
 

@@ -23,5 +23,5 @@ claude auth login
 node server/lab-server.mjs</pre>
 <p>Then open the address it prints and press New task. The service is localhost-only and token-protected, runs each task in its own workspace folder with a tool allowlist and a budget cap, and saves every session locally. Details and limits: <a href="server/README.md">server/README.md</a>.</p>
 <h2>What is verified</h2>
-<p>Service plumbing, security rules and the dashboard flow are tested with a clearly labelled test stub; the message mapping is tested on 1,552 real Claude Code message lines. <b>A full real Claude Code run is not yet verified</b>; a runnable check for it is included. See the <a href="README.md">README</a>.</p>
+<p>Service plumbing, security rules and the dashboard flow are tested with a clearly labelled test stub; the stream mapping is tested on two real Claude Code runs and 1,552 real message lines. <b>A real Claude Code run has been verified end to end</b> (a runnable check is included); real subagent delegation and follow-ups are not yet verified. See the <a href="README.md">README</a>.</p>
 </main></body></html>

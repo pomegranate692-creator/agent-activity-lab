@@ -199,9 +199,15 @@
       player.state = core.initialState(Object.assign({ agents: [] }, player.meta)); scrub.max = player.duration; select(null); if (proto && proto.onReset) proto.onReset(player.state);
       player.seek(player.duration);
     }
+    /* local service present: start empty instead of playing the scripted demo (the demo is for demo mode only) */
+    function idle(note) {
+      closeLive(); player.pause(); player.live = false; player.events = []; player.t = 0; player.duration = 1000;
+      player.meta = { source: 'waiting', sourceNote: note || 'Connected to the local service. No task is running; press New task or open History.', agents: [] };
+      player.state = core.initialState(player.meta); scrub.max = 1000; select(null); if (proto && proto.onReset) proto.onReset(player.state); fullUpdate(player.state, [], 0);
+    }
     function backToSimulated() { closeLive(); player.live = false; player.events = src.events.slice(); player.meta = src.meta; player.duration = scenario.meta.durationMs; player.state = core.initialState(src.meta); select(null); if (proto && proto.onReset) proto.onReset(player.state); player.seek(0); player.play(); }
     global.__agentlab = {
-      connectLive: connectLive, loadEvents: loadEvents, backToSimulated: backToSimulated,
+      connectLive: connectLive, loadEvents: loadEvents, backToSimulated: backToSimulated, idle: idle,
       manual: false, player: player, proto: function () { return proto; },
       beginManual: function () { this.manual = true; player.manual = true; },
       step: function (dtMs) { if (proto.frame) proto.frame(dtMs, performance.now(), player.state); player.step(dtMs); },

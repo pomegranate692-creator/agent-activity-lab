@@ -29,8 +29,9 @@
 |---|---|
 | Service plumbing, security rules, dashboard flow | 74 server checks and 39 app checks pass, using a **test stub** that speaks Claude Code's stream format (labelled TEST STUB; it is not Claude) |
 | Message mapping on real Claude Code message shapes | tested on 1,552 real transcript lines |
-| **A real Claude Code run end to end** | **not yet verified** (the author's CLI was signed out). `node tools/milestone-check.mjs` runs the first-milestone workflow for real and checks every step |
-| Real subagent delegation, real permission-denial wording | mapped from the documented format, unverified until a real run |
+| **A real Claude Code run end to end** | **verified** (Claude Code 2.1.263): `node tools/milestone-check.mjs` passes, and the same task ran twice through the app with a working generated script and saved history. Two redacted real streams are regression fixtures |
+| Real permission-denial wording | verified on real runs (shown as blocked, with the approvable rule) |
+| Real subagent delegation; `--resume` follow-ups (retry one agent, approve and continue); Stop | **not verified** with the real CLI yet (the real tasks used no subagents); tested with the stub only |
 | Pause a running task; approve during a run | not supported (headless Claude Code); approve and re-run is supported |
 
 Security model, controls and limits: [server/README.md](server/README.md). It is a code-execution surface: localhost only, token-protected, tool allowlist, workspace folder per task, budget cap. The Workspace policy lets Python run with your user permissions, so only run tasks you trust.

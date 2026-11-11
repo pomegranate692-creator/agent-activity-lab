@@ -29,7 +29,7 @@ if (/FAIL_SUB/.test(prompt)) {
 }
 if (/SLOW/.test(prompt)) { asst([{ type: 'text', text: 'Working slowly.' }]); await sleep(60000); process.exit(0); }
 asst([{ type: 'text', text: 'I will split this: a subagent inspects the data while I write the script.' }]); await sleep(150);
-asst([{ type: 'tool_use', id: 'toolu_sub1', name: 'Agent', input: { subagent_type: 'data-inspector', description: 'Inspect sample.csv columns' } }, { type: 'tool_use', id: 'toolu_w1', name: 'Write', input: { file_path: process.cwd() + '/sample.csv', content: 'a,b\n1,2\n3,4\n' } }]); await sleep(100);
+asst([{ type: 'tool_use', id: 'toolu_sub1', name: 'Agent', input: { subagent_type: 'data-inspector', description: 'Inspect sample.csv columns' } }, { type: 'tool_use', id: 'toolu_w1', name: 'Write', input: { file_path: './sample.csv', content: 'a,b\n1,2\n3,4\n' } }]); await sleep(100);
 fs.writeFileSync('sample.csv', 'a,b\n1,2\n3,4\n');
 user([{ type: 'tool_result', tool_use_id: 'toolu_w1', content: 'File created', is_error: false }]);
 asst([{ type: 'tool_use', id: 'toolu_r1', name: 'Read', input: { file_path: process.cwd() + '/sample.csv' } }], 'toolu_sub1'); await sleep(200);
@@ -39,7 +39,7 @@ user([{ type: 'tool_result', tool_use_id: 'toolu_f1', content: "Claude requested
 asst([{ type: 'tool_use', id: 'toolu_r2', name: 'Read', input: { file_path: process.cwd() + '/sample.csv' } }], 'toolu_sub1'); await sleep(100);
 user([{ type: 'tool_result', tool_use_id: 'toolu_r2', content: 'a,b 1,2 3,4', is_error: false }], 'toolu_sub1');
 user([{ type: 'tool_result', tool_use_id: 'toolu_sub1', content: [{ type: 'text', text: 'Two numeric columns, a and b, two rows.' }], is_error: false }]);
-asst([{ type: 'tool_use', id: 'toolu_w2', name: 'Write', input: { file_path: process.cwd() + '/analyze_csv.py', content: "import csv,sys\nrows=list(csv.DictReader(open(sys.argv[1])))\nprint(len(rows),'rows')\n" } }]); await sleep(100);
+asst([{ type: 'tool_use', id: 'toolu_w2', name: 'Write', input: { file_path: './analyze_csv.py', content: "import csv,sys\nrows=list(csv.DictReader(open(sys.argv[1])))\nprint(len(rows),'rows')\n" } }]); await sleep(100);
 fs.writeFileSync('analyze_csv.py', "import csv,sys\nrows=list(csv.DictReader(open(sys.argv[1])))\nprint(len(rows),'rows')\n");
 user([{ type: 'tool_result', tool_use_id: 'toolu_w2', content: 'File created', is_error: false }]);
 asst([{ type: 'tool_use', id: 'toolu_b1', name: 'Bash', input: { command: 'python3 analyze_csv.py missing.csv' } }]); await sleep(120);

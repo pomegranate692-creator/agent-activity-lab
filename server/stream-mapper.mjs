@@ -17,9 +17,11 @@
  * emitted when a subagent returns its report; outputs come from successful Write/Edit calls (the service adds files found on disk).
  */
 
+import path from 'node:path';
+
 const SUB_TOOLS = new Set(['Task', 'Agent']);
 const WRITE_TOOLS = new Set(['Write', 'Edit', 'MultiEdit', 'NotebookEdit']);
-const PERM_RE = /permission|not allowed|requires? approval|haven't been granted|has not been granted|was denied|denied by|not permitted/i;
+const PERM_RE = /permission|not allowed|requires? approval|haven't been granted|has not been granted|was denied|has been denied|denied by|not permitted|(was|were) blocked|may only write/i; // includes the REAL wordings seen: "Permission to use Bash with command ... has been denied." and "Output redirection to ... was blocked. For security, Claude Code may only write to files in the allowed working directories"
 
 const flat = (c) => (typeof c === 'string' ? c : Array.isArray(c) ? c.map((x) => (x && x.text) || '').join(' ') : c == null ? '' : JSON.stringify(c)).replace(/\s+/g, ' ').trim();
 const cut = (t, n) => (String(t).length > n ? String(t).slice(0, n - 1) + '…' : String(t));
@@ -28,7 +30,10 @@ const kindOf = (p) => { const e = (String(p).split('.').pop() || '').toLowerCase
 
 export function createStreamMapper({ now = () => 0, workspace = '', title = 'Task', prompt = '' } = {}) {
   const S = { calls: {}, subs: {}, subOrder: [], failed: {}, attempts: {}, blocked: {}, outputs: [], seenOutputs: new Set(), toolCalls: 0, finished: false, started: false, result: null };
-  const rel = (p) => { p = String(p || ''); if (workspace && p.startsWith(workspace + '/')) return p.slice(workspace.length + 1); return p; };
+  const prefixes = new Set(); const addPrefix = (w) => { if (!w) return; w = String(w).replace(/\/+$/, ''); prefixes.add(w); prefixes.add(w.replace(/^\/private(?=\/)/, '')); if (!w.startsWith('/private/')) prefixes.add('/private' + w); };
+  addPrefix(workspace);
+  // Real Claude Code writes relative paths like "./analyze_csv.py", and may report the workspace as /private/var/... or /var/...: normalise all of them
+  const rel = (p) => { p = String(p || ''); if (!p) return ''; for (const w of prefixes) if (p === w) return ''; for (const w of prefixes) if (p.startsWith(w + '/')) return path.posix.normalize(p.slice(w.length + 1)); return p.startsWith('/') ? p : path.posix.normalize(p); };
 
   function begin() {
     if (S.started) return [];
@@ -95,6 +100,7 @@ export function createStreamMapper({ now = () => 0, workspace = '', title = 'Tas
   function map(obj) {
     const out = begin();
     if (!obj || typeof obj !== 'object') return out;
+    if (obj.type === 'system' && obj.subtype === 'init' && obj.cwd) addPrefix(obj.cwd); // the CLI reports its own working directory
     if (obj.type === 'assistant') onAssistant(obj, out);
     else if (obj.type === 'user') onUser(obj, out);
     else if (obj.type === 'result') {

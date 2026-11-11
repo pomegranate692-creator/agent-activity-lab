@@ -102,6 +102,7 @@
         if (!info) { var nm = el('div', 'ap-cmd ap-cmd-demo', null, null); nm.textContent = 'DEMO MODE · simulated scenario only. Live task execution needs the local service: run  node server/lab-server.mjs  and open the address it prints.'; root.insertBefore(nm, root.firstChild); return; }
         if (tabEls.results) tabEls.results.style.display = '';
         Lab.afterConnect = function () { userChose = false; if (active === 'results') show('cards'); };
+        if (g.__agentlab && g.__agentlab.idle) g.__agentlab.idle(); // no scripted demo behind a live service
         Lab.mount(root, { fresh: function () { userChose = false; } });
       });
       return {
