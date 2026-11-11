@@ -17,7 +17,7 @@ Each design is plain HTML, CSS and JS (no build step, no dependencies). Pause, r
 ## Pick one and start your own
 
 ```bash
-git clone https://github.com/OWNER/agent-activity-lab && cd agent-activity-lab
+git clone https://github.com/pomegranate692-creator/agent-activity-lab && cd agent-activity-lab
 node tools/pick.mjs --list                       # see the designs
 node tools/pick.mjs 09-card-tree ../my-agent-view
 cd ../my-agent-view && npm start                 # http://127.0.0.1:7777
