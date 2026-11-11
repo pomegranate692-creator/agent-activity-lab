@@ -3,11 +3,9 @@
 <head>
 <meta charset="utf-8"><link rel="icon" href="data:,">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent Activity · unified viewer v0</title>
+<title>Agent Activity Lab</title>
 <link rel="stylesheet" href="../shared/theme.css">
-<link rel="stylesheet" href="../prototypes/09-card-tree/proto.css">
-<link rel="stylesheet" href="../prototypes/07-swimlanes/proto.css">
-<link rel="stylesheet" href="../prototypes/05-contribution-river/proto.css">
+<link rel="stylesheet" href="cards/cards.css">
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -16,13 +14,10 @@
 <script src="../shared/stress.js"></script>
 <script src="../shared/core.js"></script>
 <script src="../shared/chrome.js"></script>
-<!-- Collect the three existing designs as views instead of mounting them one by one. Their code is used unchanged. -->
+<!-- views register themselves with the shell (collect.js), then app.js mounts ONE shell around them -->
 <script src="collect.js"></script>
-<script src="../prototypes/09-card-tree/proto.js"></script>
-<script src="../prototypes/07-swimlanes/proto.js"></script>
-<script src="../prototypes/05-contribution-river/proto.js"></script>
+<script src="cards/cards.js"></script>
 <script src="toolstream.js"></script>
-<script src="composite.js"></script>
 <script src="runpanel.js"></script>
 <script src="app.js"></script>
 </body>

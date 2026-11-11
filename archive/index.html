@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><link rel="icon" href="data:,"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agent Activity Lab: design archive</title>
+<style>
+:root{--bg:#EAE8E1;--ink:#1F2528;--slate:#56636A;--line:#B7BCB8;--teal:#1F8A7A;--amber:#B7790A;--card:#F5F3EC}
+@media (prefers-color-scheme: dark){:root{--bg:#1B2022;--ink:#E7E5DE;--slate:#A3AEB3;--line:#3A4448;--teal:#4CC0AE;--amber:#E0A53A;--card:#242B2E}}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Inter Tight",system-ui,sans-serif} main{max-width:1200px;margin:0 auto;padding:28px 16px 56px}
+h1{margin:0 0 6px;font-size:28px} h2{font-size:19px;margin:28px 0 8px} p{max-width:760px;margin:6px 0} a{color:var(--teal)}
+.badge{display:inline-block;border:1px dashed var(--amber);color:var(--amber);border-radius:999px;padding:2px 10px;font:12px Menlo,monospace}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;margin-top:14px}
+figure{margin:0;background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden} figure.chosen{border:2px solid var(--teal)}
+img{width:100%;display:block;background:#fff;aspect-ratio:8/5;object-fit:cover} figcaption{padding:10px 12px;font-size:14px} figcaption b{display:block;font-size:16px} figcaption span{display:block;color:var(--slate);margin-bottom:6px} em{font-style:normal;color:var(--teal);font-weight:600}
+</style></head><body><main>
+<h1>Design archive</h1>
+<p><span class="badge">SIMULATED</span> The ten visualization designs that were evaluated, kept for reference and development. <b>The product is the <a href="../app/index.html">main app</a></b>, which uses the Card tree. These pages replay a scripted task and run no agents.</p>
+<p>How the choice was made: <a href="../docs/DESIGN-REVIEW.md">docs/DESIGN-REVIEW.md</a>. The shared event model and UI shell these designs use is in <code>shared/</code>.</p>
+<div class="grid">
+<figure><a href="../prototypes/01-orb-web/index.html"><img loading="lazy" alt="Orb web design" src="../previews/01-orb-web.png"></a><figcaption><b>01 Orb web</b><span>Hub, threads, dependency arcs, message beads.</span><a href="../prototypes/01-orb-web/index.html">Open interactive (simulated)</a> · <a href="../prototypes/01-orb-web/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/02-hive-cells/index.html"><img loading="lazy" alt="Hive cells design" src="../previews/02-hive-cells.png"></a><figcaption><b>02 Hive cells</b><span>Honeycomb: subagents bud off their parent.</span><a href="../prototypes/02-hive-cells/index.html">Open interactive (simulated)</a> · <a href="../prototypes/02-hive-cells/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/03-radar/index.html"><img loading="lazy" alt="Radar design" src="../previews/03-radar.png"></a><figcaption><b>03 Radar</b><span>Rings are delegation depth.</span><a href="../prototypes/03-radar/index.html">Open interactive (simulated)</a> · <a href="../prototypes/03-radar/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/04-routed-lattice/index.html"><img loading="lazy" alt="Routed lattice design" src="../previews/04-routed-lattice.png"></a><figcaption><b>04 Routed lattice</b><span>Chips and wires on a dot grid.</span><a href="../prototypes/04-routed-lattice/index.html">Open interactive (simulated)</a> · <a href="../prototypes/04-routed-lattice/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/05-contribution-river/index.html"><img loading="lazy" alt="Contribution river design" src="../previews/05-contribution-river.png"></a><figcaption><b>05 Contribution river</b><span>Width is effort, flowing to the result.</span><a href="../prototypes/05-contribution-river/index.html">Open interactive (simulated)</a> · <a href="../prototypes/05-contribution-river/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/06-floorplan/index.html"><img loading="lazy" alt="Floorplan design" src="../previews/06-floorplan.png"></a><figcaption><b>06 Floorplan</b><span>An office with the plumbing showing.</span><a href="../prototypes/06-floorplan/index.html">Open interactive (simulated)</a> · <a href="../prototypes/06-floorplan/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/07-swimlanes/index.html"><img loading="lazy" alt="Swimlanes design" src="../previews/07-swimlanes.png"></a><figcaption><b>07 Swimlanes</b><span>One lane per agent over time.</span><a href="../prototypes/07-swimlanes/index.html">Open interactive (simulated)</a> · <a href="../prototypes/07-swimlanes/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/08-territories/index.html"><img loading="lazy" alt="Territories design" src="../previews/08-territories.png"></a><figcaption><b>08 Territories</b><span>Each agent owns a region of a map.</span><a href="../prototypes/08-territories/index.html">Open interactive (simulated)</a> · <a href="../prototypes/08-territories/README.md">notes</a></figcaption></figure>
+<figure class="chosen"><a href="../prototypes/09-card-tree/index.html"><img loading="lazy" alt="Card tree design" src="../previews/09-card-tree.png"></a><figcaption><b>09 Card tree <em>(primary)</em></b><span>Selected as the primary view. The product uses a refined copy in app/cards/.</span><a href="../prototypes/09-card-tree/index.html">Open interactive (simulated)</a> · <a href="../prototypes/09-card-tree/README.md">notes</a></figcaption></figure>
+<figure><a href="../prototypes/10-message-matrix/index.html"><img loading="lazy" alt="Message matrix design" src="../previews/10-message-matrix.png"></a><figcaption><b>10 Message matrix</b><span>Rows send, columns receive.</span><a href="../prototypes/10-message-matrix/index.html">Open interactive (simulated)</a> · <a href="../prototypes/10-message-matrix/README.md">notes</a></figcaption></figure>
+</div>
+<h2>Layer experiments (retired from the main interface)</h2>
+<p>Two experiments that merged the designs: <a href="one.html">all ten as one picture</a> (a single radial map with a toggleable layer per design) and <a href="all.html">a live tile grid of the ten</a>. They were an exploration, not the product.</p>
+</main></body></html>

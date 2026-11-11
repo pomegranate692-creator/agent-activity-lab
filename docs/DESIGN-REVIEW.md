@@ -1,5 +1,7 @@
 # Design review: choosing ONE primary visualization
 
+**DECISION (owner): Card tree is the primary visualization.** Implemented in `app/cards/`; the other designs and the layer experiments are in `archive/`.
+
 Goal: an interactive AI agent command center on real activity, one exceptionally polished primary view.
 
 **How the scores were made.** Judgment of the author (an AI), from: the t = 12 s poster of every design, the final-state and 30-agent stress frames, each prototype's README (known limits), the objective QA pass (`node tools/qa.mjs`), and real replays of a recorded Claude Code session through three of the designs. No user has used any of them on real work. 5 is best.

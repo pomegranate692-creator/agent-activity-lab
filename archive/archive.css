@@ -1,0 +1,37 @@
+/* Styles for the archived layer experiments (all.html tile grid, one.html combined picture). Not used by the main app. */
+/* "All ten" grid */
+.ap-grid { position: absolute; inset: 0; display: none; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 14px; overflow: auto; align-content: start; }
+.ap-tile { min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: flex; flex-direction: column; }
+.ap-tile-frame { position: relative; overflow: hidden; background: var(--bg); width: 100%; }
+.ap-tile-inner { position: absolute; left: 0; top: 0; width: 940px; height: 600px; transform-origin: 0 0; }
+.ap-tile-inner .ap-view { position: absolute; inset: 0; }
+.ap-tile-hit { position: absolute; inset: 0; border: 0; background: transparent; cursor: pointer; z-index: 5; }
+.ap-tile-hit:hover { background: rgba(31,138,122,.08); } .ap-tile-hit:focus-visible { outline: 3px solid var(--ink); outline-offset: -3px; }
+.ap-tile-cap { padding: 8px 12px 10px; border-top: 1px solid var(--line); font: 13px var(--sans); color: var(--slate); } .ap-tile-cap b { display: block; font: 700 14px var(--sans); color: var(--ink); }
+.ap-tile-cap span { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ap-all .ap-tabs { overflow-x: auto; flex-wrap: nowrap; } .ap-all .ap-tab { white-space: nowrap; padding: 7px 10px; font-size: 13px; }
+
+.ts-bar.measured { background: var(--ink-2); }
+
+/* All ten as one */
+.co-wrap { position: absolute; inset: 0; background: var(--bg); }
+.co-svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.co-t { font-family: Menlo, ui-monospace, monospace; font-size: 10px; fill: #1F2528; letter-spacing: .02em; }
+.co-dim { fill: #56636A; font-size: 9px; letter-spacing: .08em; } .co-room { font-size: 9.5px; font-weight: 700; letter-spacing: .1em; fill: #1F2528; }
+.co-card { font-family: "Inter Tight", system-ui, sans-serif; font-size: 11.5px; font-weight: 700; } .co-sub { font-size: 9.5px; fill: #56636A; } .co-hub { font-size: 12px; font-weight: 700; }
+.co-node { cursor: pointer; outline: none; } .co-node:focus-visible > rect:first-child, .co-node:focus-visible > polygon { stroke: #1F2528; stroke-width: 3; }
+.co-pulse { animation: co-pulse 1.8s ease-in-out infinite; transform-box: fill-box; transform-origin: center; } @keyframes co-pulse { 50% { stroke-opacity: .08; } }
+@media (prefers-reduced-motion: reduce) { .co-pulse { animation: none; } }
+.co-svg[data-focus] > g { opacity: .18; transition: opacity .12s; } .co-svg[data-focus="01"] > .L01, .co-svg[data-focus="03"] > .L03, .co-svg[data-focus="04"] > .L04, .co-svg[data-focus="05"] > .L05, .co-svg[data-focus="06"] > .L06, .co-svg[data-focus="07"] > .L07, .co-svg[data-focus="08"] > .L08, .co-svg[data-focus="10"] > .L10, .co-svg[data-focus="02"] > .L09, .co-svg[data-focus="09"] > .L09 { opacity: 1; }
+.co-layers { position: absolute; left: 12px; top: 10px; width: 172px; display: flex; flex-direction: column; gap: 4px; z-index: 3; }
+.co-lh { font: 10px var(--mono); letter-spacing: .1em; color: var(--slate); margin-bottom: 2px; }
+.co-chip { display: flex; align-items: center; gap: 8px; text-align: left; font: 600 12px var(--sans); padding: 4px 8px; border: 1px solid var(--mist); border-radius: 7px; background: #fff; color: var(--ink); cursor: pointer; }
+.co-chip i { font: 700 11px var(--mono); font-style: normal; color: var(--acc); min-width: 18px; } .co-chip[aria-pressed=false] { opacity: .45; background: transparent; text-decoration: line-through; }
+.co-chip:focus-visible, .co-all:focus-visible { outline: 2px solid var(--ink); outline-offset: 2px; }
+.co-all { margin-top: 4px; font: 12px var(--sans); color: var(--acc); background: none; border: none; text-align: left; cursor: pointer; padding: 2px 4px; text-decoration: underline; }
+
+.co-key { margin-top: 8px; font: 10.5px/1.45 var(--sans); color: var(--slate); background: rgba(255,255,255,.55); border: 1px solid var(--line); border-radius: 7px; padding: 7px 9px; } .co-key b { color: var(--ink); font: 700 10.5px var(--mono); letter-spacing: .06em; }
+
+.ap-empty { position: absolute; inset: 0; z-index: 6; background: var(--bg); padding: 40px 48px; overflow: auto; } .ap-empty h2 { margin: 0 0 8px; font: 700 22px var(--sans); } .ap-empty p { max-width: 640px; margin: 6px 0 14px; color: var(--ink-2); font: 15px/1.5 var(--sans); }
+.ap-empty ol { max-width: 640px; margin: 0 0 14px; padding-left: 22px; font: 14px/1.6 var(--sans); } .ap-empty li { margin-bottom: 6px; } .ap-empty-note { font: 13px var(--sans); color: var(--slate); border-left: 3px solid var(--amber); padding-left: 10px; }
+

@@ -4,14 +4,14 @@
   var reg = g.__AppViews, byId = {};
   reg.views.forEach(function (v) { byId[v.id] = v; });
   var CFG = g.__AppConfig || {};
-  var ORDER = CFG.order || [['09', 'Cards'], ['07', 'Timeline'], ['05', 'River'], ['one', 'All ten as one'], ['tools', 'Tool stream'], ['results', 'Output']];
+  var ORDER = CFG.order || [['cards', 'Agents'], ['tools', 'Tool stream'], ['results', 'Output']];
   var GRID = !!CFG.grid; // "All ten" mode: a live tile grid of every design; click a tile to open it
   var params = new URLSearchParams(location.search);
   function el(tag, cls, text, parent) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
 
   g.AgentChrome.mount = reg.realMount;
   g.AgentChrome.mount({
-    id: CFG.num || 'AP', name: CFG.title || 'Agent Activity', tagline: CFG.tagline || 'Unified viewer v0 · Cards, Timeline, Result, Tool stream',
+    id: CFG.num || 'LAB', name: CFG.title || 'Agent Activity Lab', tagline: CFG.tagline || 'Command center for AI agent tasks',
     create: function (stage, ctx) {
       var root = el('div', 'ap-root', null, stage);
       var need = el('div', 'ap-need', null, root); need.setAttribute('role', 'region'); need.setAttribute('aria-label', 'Needs you');
@@ -80,6 +80,9 @@
           var b = el('button', 'ap-pill ap-pill-' + i.k, null, need); b.type = 'button'; b.title = i.who + ' ' + i.k + ': ' + i.why; b.setAttribute('aria-label', i.who + ' ' + i.k + ': ' + i.why);
           el('span', 'ap-glyph', null, b); el('b', null, i.who + (i.k === 'blocked' ? ' BLOCKED' : ' FAILED'), b); el('span', 'ap-why', i.why, b);
           b.onclick = function () { ctx.select(i.id); };
+          if (i.k === 'blocked' && g.__Lab && g.__Lab.current && /permission/i.test(i.why) && tabEls.results) { /* a denied action of a real session: jump to the approve-and-re-run list */
+            var r = el('button', 'ap-pill ap-pill-act', 'Review and approve', need); r.type = 'button'; r.onclick = function () { userChose = true; show('results'); };
+          }
         });
       }
       var lastCounts = '';
@@ -87,10 +90,10 @@
         var resultOk = s.outputs.length > 0 || s.finished;
         var rt = tabEls['05']; if (rt) { rt.setAttribute('aria-disabled', String(!resultOk)); rt.title = resultOk ? '' : 'Available once the task has produced outputs or finished'; }
         if (!userChose) {
-          if (!GRID && inst.tools && inst['09']) { var want = s.order.length && s.order.length <= 2 ? 'tools' : '09'; if (s.order.length && want !== active) show(want); }
+          if (!GRID && inst.tools && inst.cards) { var want = s.order.length && s.order.length <= 2 ? 'tools' : 'cards'; if (s.order.length && want !== active) show(want); }
         }
       }
-      var DEFAULT = inst['09'] ? '09' : ORDER.map(function (o) { return o[0]; }).filter(function (id) { return inst[id]; })[0];
+      var DEFAULT = inst.cards ? 'cards' : ORDER.map(function (o) { return o[0]; }).filter(function (id) { return inst[id]; })[0];
       show(GRID ? 'grid' : DEFAULT);
       /* real task execution: only when the local service is present; otherwise demo mode (simulated scenario only) */
       var Lab = g.__Lab;
@@ -98,7 +101,7 @@
       if (Lab && !CFG.order) Lab.ready.then(function (info) {
         if (!info) { var nm = el('div', 'ap-cmd ap-cmd-demo', null, null); nm.textContent = 'DEMO MODE · simulated scenario only. Live task execution needs the local service: run  node server/lab-server.mjs  and open the address it prints.'; root.insertBefore(nm, root.firstChild); return; }
         if (tabEls.results) tabEls.results.style.display = '';
-        Lab.afterConnect = function () { userChose = false; if (active === 'results') show('09'); };
+        Lab.afterConnect = function () { userChose = false; if (active === 'results') show('cards'); };
         Lab.mount(root, { fresh: function () { userChose = false; } });
       });
       return {
