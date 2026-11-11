@@ -4,7 +4,7 @@
   var reg = g.__AppViews, byId = {};
   reg.views.forEach(function (v) { byId[v.id] = v; });
   var CFG = g.__AppConfig || {};
-  var ORDER = CFG.order || [['09', 'Cards'], ['07', 'Timeline'], ['05', 'Result'], ['one', 'All ten as one'], ['tools', 'Tool stream']];
+  var ORDER = CFG.order || [['09', 'Cards'], ['07', 'Timeline'], ['05', 'River'], ['one', 'All ten as one'], ['tools', 'Tool stream'], ['results', 'Output']];
   var GRID = !!CFG.grid; // "All ten" mode: a live tile grid of every design; click a tile to open it
   var params = new URLSearchParams(location.search);
   function el(tag, cls, text, parent) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
@@ -92,6 +92,15 @@
       }
       var DEFAULT = inst['09'] ? '09' : ORDER.map(function (o) { return o[0]; }).filter(function (id) { return inst[id]; })[0];
       show(GRID ? 'grid' : DEFAULT);
+      /* real task execution: only when the local service is present; otherwise demo mode (simulated scenario only) */
+      var Lab = g.__Lab;
+      if (tabEls.results) tabEls.results.style.display = 'none';
+      if (Lab && !CFG.order) Lab.ready.then(function (info) {
+        if (!info) { var nm = el('div', 'ap-cmd ap-cmd-demo', null, null); nm.textContent = 'DEMO MODE · simulated scenario only. Live task execution needs the local service: run  node server/lab-server.mjs  and open the address it prints.'; root.insertBefore(nm, root.firstChild); return; }
+        if (tabEls.results) tabEls.results.style.display = '';
+        Lab.afterConnect = function () { userChose = false; if (active === 'results') show('09'); };
+        Lab.mount(root, { fresh: function () { userChose = false; } });
+      });
       return {
         update: function (s, events, dt) {
           if (empty) empty.style.display = s.order.length ? 'none' : '';

@@ -75,6 +75,9 @@
 
     function renderBadge(s) {
       if (s.source === 'simulated') setBadge('sim', 'SIMULATED', s.sourceNote || 'Scripted scenario. No real agents are running.');
+      else if (s.source === 'claude-code') setBadge('live', 'LIVE · Claude Code session', s.sourceNote || '');
+      else if (s.source === 'claude-code-saved') setBadge('replay', 'SAVED · real Claude Code session', s.sourceNote || '');
+      else if (s.source === 'test-stub') setBadge('sim', 'TEST STUB · NOT CLAUDE', s.sourceNote || 'A test double produced these events. No real Claude Code ran.');
       else if (s.source === 'waiting') setBadge('replay', 'CONNECTED · WAITING FOR EVENTS', s.sourceNote || '');
       else if (s.source === 'live-hook') setBadge('live', 'LIVE · hook events', s.sourceNote || '');
       else if (s.source === 'transcript') setBadge('replay', 'REPLAY · transcript', s.sourceNote || '');
@@ -163,6 +166,7 @@
     scrub.oninput = function () { player.pause(); player.seek(Number(scrub.value)); };
     motionBox.onchange = function () { reduced = motionBox.checked; if (proto.onMotionChange) proto.onMotionChange(reduced); };
     document.addEventListener('keydown', function (e) {
+      var tg = e.target; if (tg && tg.tagName && (tg.tagName === 'TEXTAREA' || tg.tagName === 'SELECT' || (tg.tagName === 'INPUT' && tg.type !== 'range' && tg.type !== 'checkbox' && tg.type !== 'radio') || tg.isContentEditable || (tg.closest && tg.closest('dialog')))) return; // typing in a form field must never trigger player shortcuts
       if (e.target && (e.target.tagName === 'INPUT' && e.target.type === 'range')) { if (e.key === ' ') e.preventDefault(); }
       if (e.key === ' ') { e.preventDefault(); player.toggle(); }
       else if (e.key === 'r' || e.key === 'R') { player.replay(); select(null); }
@@ -180,7 +184,23 @@
     requestAnimationFrame(frameLoop);
 
     /* ---------------- capture / test hook ---------------- */
+    /* switch the shell to a session without reloading: live stream, or saved events */
+    function closeLive() { if (liveConn && liveConn.close) liveConn.close(); liveConn = null; }
+    function connectLive(url, meta) {
+      closeLive(); player.pause(); player.live = true; player.events = []; player.t = 0; player.duration = 1000;
+      player.meta = Object.assign({ source: 'live-hook', sourceNote: '' }, meta || {}); player.state = core.initialState(Object.assign({ agents: [] }, player.meta)); player.liveStart = performance.now() - ((meta && meta.elapsedMs) || 0); // session may already have been running when we connect
+      select(null); if (proto && proto.onReset) proto.onReset(player.state);
+      liveConn = core.Sources.live(url, player, function (st) { noteLine.textContent = 'Session stream: ' + st; }); player.play(); fullUpdate(player.state, [], 0);
+    }
+    function loadEvents(events, meta) {
+      closeLive(); player.pause(); player.live = false; player.events = events.slice().sort(function (a, b) { return a.t - b.t; });
+      player.meta = Object.assign({ source: 'claude-code-saved', sourceNote: '' }, meta || {}); player.duration = (player.events.length ? player.events[player.events.length - 1].t : 0) + 1000;
+      player.state = core.initialState(Object.assign({ agents: [] }, player.meta)); scrub.max = player.duration; select(null); if (proto && proto.onReset) proto.onReset(player.state);
+      player.seek(player.duration);
+    }
+    function backToSimulated() { closeLive(); player.live = false; player.events = src.events.slice(); player.meta = src.meta; player.duration = scenario.meta.durationMs; player.state = core.initialState(src.meta); select(null); if (proto && proto.onReset) proto.onReset(player.state); player.seek(0); player.play(); }
     global.__agentlab = {
+      connectLive: connectLive, loadEvents: loadEvents, backToSimulated: backToSimulated,
       manual: false, player: player, proto: function () { return proto; },
       beginManual: function () { this.manual = true; player.manual = true; },
       step: function (dtMs) { if (proto.frame) proto.frame(dtMs, performance.now(), player.state); player.step(dtMs); },

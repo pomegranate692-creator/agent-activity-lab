@@ -26,7 +26,7 @@
         }
       }
       var sig = '', sel = null;
-      var KINDS = { tool: 1, failed: 1, retry: 1, blocked: 1, unblocked: 1, delegate: 1, message: 1, output: 1 };
+      var KINDS = { note: 1, tool: 1, failed: 1, retry: 1, blocked: 1, unblocked: 1, delegate: 1, message: 1, output: 1 };
       function el(tag, cls, text, parent) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
       function render(s) {
         var all = s.log.filter(function (l) { return KINDS[l.kind]; });
@@ -64,6 +64,7 @@
           else if (l.kind === 'unblocked') { tool = '▶ unblocked'; input = l.text.replace(/^.*? unblocked ?/, ''); }
           else if (l.kind === 'delegate') { tool = '→ delegated'; input = l.text; }
           else if (l.kind === 'message') { tool = '✉ message'; input = l.text; }
+          else if (l.kind === 'note') { tool = '💬 says'; input = l.text.replace(/^.*? said: /, ''); }
           else if (l.kind === 'output') { tool = '▤ output'; input = l.text.replace(/^.*? produced /, ''); }
           el('span', 'ts-tool', tool, r);
           var det = el('span', 'ts-detail', null, r);

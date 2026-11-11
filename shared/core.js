@@ -7,6 +7,8 @@
  *   agent_spawned    { agentId, name, label, role, parentId, dependsOn: [] }
  *   work_delegated   { fromId, toId, workId, description }
  *   tool_called      { agentId, tool, input, durationMs, callId? }
+ *   agent_started    { agentId }                           (optional: a queued agent begins working, e.g. a subagent at the moment it is really created)
+ *   agent_said       { agentId, text }                     (optional: short commentary from the agent; shown in recent actions and the Tool stream)
  *   tool_returned    { agentId, callId, durationMs, ok }   (optional: sets the measured duration/outcome on the matching tool_called; adds no log line)
  *   message_sent     { fromId, toId, text }
  *   agent_blocked    { agentId, reason, needs }
@@ -101,6 +103,13 @@
         logLine(s, t, a.name + ' called ' + ev.tool + (ev.input ? ' · ' + ev.input : ''), a.id, 'tool');
         if (ev.callId) s.log[s.log.length - 1].callId = ev.callId;
         break;
+      case 'agent_started':
+        a = s.agents[ev.agentId]; if (!a) break;
+        if (a.state === 'queued' || a.state === 'waiting') { a.state = 'working'; a.startedAt = a.startedAt || t; }
+        break;
+      case 'agent_said':
+        a = s.agents[ev.agentId]; if (!a) break;
+        pushRecent(a, t, 'Said: ' + ev.text, 'note'); logLine(s, t, a.name + ' said: ' + ev.text, a.id, 'note'); break;
       case 'tool_returned':
         for (var q = s.log.length - 1; q >= 0; q--) if (ev.callId && s.log[q].callId === ev.callId) { s.log[q].durationMs = ev.durationMs; s.log[q].ok = ev.ok !== false; break; }
         a = s.agents[ev.agentId]; if (a && a.tool && ev.durationMs != null) a.toolDuration = ev.durationMs;

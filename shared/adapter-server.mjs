@@ -83,7 +83,7 @@ export function createHookMapper() {
 }
 
 /* ---------------- server ---------------- */
-export function startServer({ port = 7777, root = ROOT, quiet = false } = {}) {
+export function startServer({ port = 7777, root = ROOT, quiet = false, handler = null, cors = '*', allowedHosts = null, hostname = '127.0.0.1' } = {}) {
   const clients = new Set(); let history = []; let source = 'waiting'; let sourceNote = 'Connected to the adapter. No events have arrived yet; nothing is shown until they do.'; let mapper = createHookMapper(); let simTimers = [];
   const send = (res, obj) => res.write('data: ' + JSON.stringify(obj) + '\n\n');
   const broadcast = (obj) => clients.forEach((c) => send(c, obj));
@@ -94,13 +94,18 @@ export function startServer({ port = 7777, root = ROOT, quiet = false } = {}) {
 
   const srv = http.createServer(async (req, res) => {
     const url = new URL(req.url, 'http://x'); const p = decodeURIComponent(url.pathname);
-    res.setHeader('Access-Control-Allow-Origin', '*'); res.setHeader('Access-Control-Allow-Headers', '*');
-    if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
+    // execution mode (lab-server): only answer requests whose Host header is the local address (blocks DNS rebinding) and send no CORS headers
+    if (allowedHosts && !allowedHosts().includes(String(req.headers.host || '').toLowerCase())) { res.writeHead(421); return res.end('misdirected request'); }
+    if (cors) { res.setHeader('Access-Control-Allow-Origin', cors); res.setHeader('Access-Control-Allow-Headers', '*'); }
+    if (req.method === 'OPTIONS') { res.writeHead(cors ? 204 : 403); return res.end(); }
+    if (handler && (await handler(req, res, url, p))) return;
+    if (allowedHosts && p.split('/').some((seg) => seg.startsWith('.'))) { res.writeHead(403); return res.end(); } // no dotfiles in execution mode
     if (p === '/favicon.ico') { res.writeHead(204); return res.end(); }
     if (p === '/events') {
       res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive' });
       send(res, { type: 'meta', source, sourceNote }); history.forEach((e) => send(res, e)); clients.add(res); req.on('close', () => clients.delete(res)); return;
     }
+    if (p === '/api/bootstrap' && req.method === 'GET') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end('{"service":false}'); } // legacy adapter: no execution service here (the app shows demo mode)
     if (p === '/status') { res.writeHead(200, { 'Content-Type': 'application/json' }); return res.end(JSON.stringify({ clients: clients.size, events: history.length, source, sourceNote })); }
     if (req.method === 'POST' && p === '/reset') { reset(); res.writeHead(200); return res.end('ok'); }
     if (req.method === 'POST' && p === '/event') {
@@ -132,7 +137,7 @@ export function startServer({ port = 7777, root = ROOT, quiet = false } = {}) {
     if (!fs.existsSync(f)) { res.writeHead(404); return res.end('not found'); }
     res.writeHead(200, { 'Content-Type': MIME[path.extname(f)] || 'application/octet-stream' }); fs.createReadStream(f).pipe(res);
   });
-  return new Promise((resolve) => srv.listen(port, '127.0.0.1', () => { const real = srv.address().port; if (!quiet) console.log(`agent-activity-lab server on http://127.0.0.1:${real}  (events: /events, hooks: POST /claude-hook, demo: POST /sim)`); resolve({ srv, port: real, close: () => new Promise((r) => { simTimers.forEach(clearTimeout); clients.forEach((c) => c.end()); srv.close(r); }) }); }));
+  return new Promise((resolve) => srv.listen(port, hostname, () => { const real = srv.address().port; if (!quiet) console.log(`agent-activity-lab server on http://127.0.0.1:${real}  (events: /events, hooks: POST /claude-hook, demo: POST /sim)`); resolve({ srv, port: real, close: () => new Promise((r) => { simTimers.forEach(clearTimeout); clients.forEach((c) => c.end()); srv.close(r); }) }); }));
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
