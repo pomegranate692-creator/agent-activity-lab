@@ -9,6 +9,8 @@ One shell that combines the three recommended designs plus a new view for the mo
 | Result | Contribution river: how every agent fed the outcome. Greyed out until there are outputs or the task finished | `prototypes/05-contribution-river/proto.js`, unchanged |
 | Tool stream (default for 1 to 2 agents) | NEW. Time-ordered list of tool calls, failures, retries, blocks, messages, outputs. Built because a real Claude Code session is mostly one agent making sequential tool calls | `toolstream.js` |
 
+Tool stream has filter chips (All, Problems, Tool calls, Messages & handoffs), an agent picker, and a Group by agent toggle for runs with several agents.
+
 Above the tabs, a **Needs you** strip lists every blocked agent (with its reason) and every failed agent (with its error). Click a pill to select that agent. Selection, playback and speed are shared across all tabs and the inspector on the right.
 
 ## Run
@@ -45,7 +47,7 @@ open 'http://127.0.0.1:7777/app/index.html?live=http://127.0.0.1:7777'
 - Result view is the river as built: unspawned dependencies have no edge until the agent appears, so columns can shift.
 - Stress run: Cards needs vertical scrolling; labels are truncated ids (`REE1`).
 - Not tested: other browsers, screen readers, touch, narrow windows (the shared shell is designed for 960 px and up).
-- The Tool stream view with several agents is a plain merged list; it is not grouped per agent.
+- Tool stream filters and grouping were tested on the 30-agent stress run (counts per filter, agent picker, 28 groups); the log window still holds only the last 200 lines, so older agents drop out of a long run.
 
 ## Shared issues (worked around, not changed)
 
@@ -54,4 +56,4 @@ open 'http://127.0.0.1:7777/app/index.html?live=http://127.0.0.1:7777'
 
 ## Next
 
-Per-agent grouping and filter chips in Tool stream; approve/retry actions on Needs-you pills (only after read-only use is trusted); verify tool-level hook payloads from a real session; run it alongside a live session as a persistent window.
+Approve/retry actions on Needs-you pills (only after read-only use is trusted); verify tool-level hook payloads from a real session; run it alongside a live session as a persistent window.
