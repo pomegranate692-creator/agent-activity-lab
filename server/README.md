@@ -73,7 +73,7 @@ node tools/milestone-check.mjs    # optional: runs the first-milestone workflow 
 | Not chosen | Agent SDK (needs npm and credentials handling); hooks only (cannot start a task) | more moving parts, no gain for the MVP |
 | Service | `server/lab-server.mjs` on top of the existing `shared/adapter-server.mjs`; Node only, no dependencies | reuses the SSE bus and static server |
 | Events | `server/stream-mapper.mjs` maps the stream to the SAME event model every view already consumes | no visualization changes needed |
-| History | `~/.agent-activity-lab/sessions/<id>/{meta.json, events.jsonl, raw.jsonl, stderr.log}` | outside the repo and the served folder |
+| History | `~/.agent-activity-lab/sessions/<id>/{meta.json, events.jsonl, stderr.log}`, plus `raw.jsonl` (full Claude output) only when recording is turned on with `node tools/lab.mjs record-output on` (off by default) | outside the repo and the served folder |
 | Workspaces | a fresh folder per task under `~/.agent-activity-lab/workspaces/` | isolation, easy "what did it create" |
 
 ## Security (it is a code-execution surface)

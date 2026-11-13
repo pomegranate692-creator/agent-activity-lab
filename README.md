@@ -23,6 +23,7 @@
 - **Claude Code pane:** a Claude Code plugin (`mod/agent-activity-lab`) keeps the same picture beside the chat in the Claude desktop app and opens the dashboard there when you submit a task; in the terminal it shows the same list as text (`/living-web` reopens it).
 - **Tool stream:** every tool call in time order, with filters and grouping. **Output:** the final answer, generated files, denied actions (approve and re-run), cost. **History:** every run is saved locally; reopen, retry or stop.
 - Nothing is invented: subagents come from real Agent tool calls, messages only when a subagent returns its report, outputs from real files.
+- **Privacy:** everything stays on your machine. History keeps activity events only; the full Claude output of a run is not recorded unless you turn it on for debugging (`node tools/lab.mjs record-output on`), and the dashboard shows a badge while it is on.
 
 ## Status (honest)
 
