@@ -10,7 +10,7 @@
  *   --scope user|project|local   user = ~/.claude/settings.json (every session)   [default: project]
  *                                project = <cwd>/.claude/settings.json, local = <cwd>/.claude/settings.local.json
  *   --file <path>                explicit settings file (overrides --scope)
- *   --url <url>                  adapter URL (default http://127.0.0.1:7777)
+ *   --url <url>                  service URL (default: the port in ~/.agent-activity-lab/config.json, 47821)
  *   --log <file>                 also keep a raw local copy of every payload (for tools/hook-coverage.mjs)
  *
  * Existing hooks are preserved. Our entries are recognised by "hook-forward.mjs" in the command, so re-running is
@@ -54,4 +54,4 @@ if (!flag('apply')) { console.log('\nDRY RUN. Nothing written. Resulting "hooks"
 fs.mkdirSync(path.dirname(file), { recursive: true });
 if (existed) fs.copyFileSync(file, `${file}.bak-${new Date().toISOString().replace(/[:.]/g, '-')}`);
 fs.writeFileSync(file, after + '\n');
-console.log(`Written. ${existed ? 'Backup saved next to it.' : ''}\nStart a NEW Claude Code session (hooks load at session start), run: node shared/adapter-server.mjs , then open app/index.html?live=http://127.0.0.1:7777`);
+console.log(`Written. ${existed ? 'Backup saved next to it.' : ''}\nThat is all: start a NEW Claude Code session (hooks load at session start). The first hook starts the local service in the background and opens the dashboard window; every task you give Claude Code then appears there by itself.\nOff switches: node tools/lab.mjs disable   |   node tools/hooks-install.mjs --remove --apply   |   see server/README.md`);

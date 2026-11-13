@@ -19,7 +19,8 @@
 
 ## What it does
 
-- **Agents (primary view):** a card tree of the main agent and its real subagents. Each card shows state, current tool and elapsed time, outputs, retries and an activity lane. **Needs You** lists blocked and failed agents with their reasons.
+- **Living Web (primary view):** Claude Code is the hub, each real subagent is a node around it, and strands show who started whom. Color shows working, delegated, waiting, done or failed; a **Right now** panel lists who is doing what. **Needs You** lists blocked and failed agents with their reasons.
+- **Claude Code pane:** a Claude Code plugin (`mod/agent-activity-lab`) keeps the same picture beside the chat in the Claude desktop app and opens the dashboard there when you submit a task; in the terminal it shows the same list as text (`/living-web` reopens it).
 - **Tool stream:** every tool call in time order, with filters and grouping. **Output:** the final answer, generated files, denied actions (approve and re-run), cost. **History:** every run is saved locally; reopen, retry or stop.
 - Nothing is invented: subagents come from real Agent tool calls, messages only when a subagent returns its report, outputs from real files.
 
@@ -31,14 +32,15 @@
 | Message mapping on real Claude Code message shapes | tested on 1,552 real transcript lines |
 | **A real Claude Code run end to end** | **verified** (Claude Code 2.1.263): `node tools/milestone-check.mjs` passes, and the same task ran twice through the app with a working generated script and saved history. Two redacted real streams are regression fixtures |
 | Real permission-denial wording | verified on real runs (shown as blocked, with the approvable rule) |
-| Real subagent delegation; `--resume` follow-ups (retry one agent, approve and continue); Stop | **not verified** with the real CLI yet (the real tasks used no subagents); tested with the stub only |
+| Real subagents (foreground and background) through hooks | **verified**: 5 headless sessions and 3 interactive sessions with two background subagents each; redacted captures are regression fixtures |
+| `--resume` follow-ups (retry one agent, approve and continue); Stop; a real tool permission prompt | **not verified** with the real CLI yet; tested with the stub only |
 | Pause a running task; approve during a run | not supported (headless Claude Code); approve and re-run is supported |
 
 Security model, controls and limits: [server/README.md](server/README.md). It is a code-execution surface: localhost only, token-protected, tool allowlist, workspace folder per task, budget cap. The Workspace policy lets Python run with your user permissions, so only run tasks you trust.
 
 ## Design
 
-The primary view is the **Card tree**, chosen from ten designs scored on clarity, usability, real-time monitoring, scale and aesthetics ([docs/DESIGN-REVIEW.md](docs/DESIGN-REVIEW.md)). All ten, plus two experiments that merged them, are kept in the [archive](archive/index.html). Research on 40+ similar GitHub projects: [research/RESEARCH.md](research/RESEARCH.md) (links only, no code copied; check each project's license).
+Ten designs were scored on clarity, usability, real-time monitoring, scale and aesthetics ([docs/DESIGN-REVIEW.md](docs/DESIGN-REVIEW.md)). The Card tree won that first round; after live use it was replaced by the **Living Web**, which is now the primary view (`shared/livingweb.js`, `app/web/`). The Card tree code is kept but no longer loaded. All ten, plus two experiments that merged them, are kept in the [archive](archive/index.html). Research on 40+ similar GitHub projects: [research/RESEARCH.md](research/RESEARCH.md) (links only, no code copied; check each project's license).
 
 ## Real activity from other sources
 

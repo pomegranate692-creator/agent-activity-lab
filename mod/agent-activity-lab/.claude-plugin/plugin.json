@@ -1,0 +1,6 @@
+{
+  "name": "agent-activity-lab",
+  "version": "0.1.0",
+  "description": "Living Web pane: watch Claude Code and its subagents work, beside the chat. Reads the local Agent Activity Lab service on this Mac.",
+  "types": "./types/index.d.ts"
+}

@@ -1,0 +1,22 @@
+/* Living Web view. The drawing itself is shared/livingweb.js; this file places it and styles the pieces around it. */
+.lw-wrap { position: absolute; inset: 0; overflow: hidden; background: radial-gradient(120% 90% at 50% 45%, #070A10 0%, var(--bg) 70%); }
+.lw-art { position: absolute; inset: 0; pointer-events: none; } .lw-art svg { display: block; width: 100%; height: 100%; }
+.lw-hits { position: absolute; inset: 0; }
+.lw-node { position: absolute; left: 0; top: 0; border: 0; padding: 0; border-radius: 50%; background: transparent; cursor: pointer; outline: none; }
+.lw-node:focus-visible { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--ink); }
+.lw-node:hover { background: radial-gradient(circle, rgba(255,255,255,.05), transparent 70%); }
+.lw-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* task name in the header */
+.lw-task { display: block; min-width: 0; max-width: 46vw; margin-left: 4px; padding-left: 16px; border-left: 1px solid var(--edge); font: 600 14px var(--sans); color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* "Right now" */
+.lw-now-h { font: 650 17px var(--sans); letter-spacing: -.01em; margin: 2px 0 10px; }
+.lw-now-empty { font: 13px/1.5 var(--sans); color: var(--slate); }
+.lw-now { display: flex; flex-direction: column; }
+.lw-row { display: grid; grid-template-columns: 28px 1fr; align-items: center; gap: 10px; width: 100%; padding: 9px 4px; border: 0; border-top: 1px solid var(--line); background: none; color: var(--ink); text-align: left; cursor: pointer; font: 13px var(--sans); border-radius: 6px; }
+.lw-row:first-child { border-top: 0; } .lw-row:hover { background: rgba(255,255,255,.04); } .lw-row:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
+.lw-row-x { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.lw-row b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lw-row-t { font-size: 12.5px; color: var(--slate); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lw-ic { width: 24px; height: 24px; display: grid; place-items: center; } .lw-ic svg { width: 20px; height: 20px; overflow: visible; }
+.lw-t-blue .lw-row-t { color: #A9D2FF; } .lw-t-amber .lw-row-t { color: var(--amber); } .lw-t-coral .lw-row-t { color: var(--rust); } .lw-t-mint .lw-row-t { color: var(--slate); }
+.lw-now-more { font: 12px var(--sans); color: var(--slate); padding: 8px 4px 0; }

@@ -6,7 +6,7 @@ Snapshot taken 2026-11-10 from the GitHub API (`gh`). Star counts, licenses, pus
 
 - 30 keyword queries on GitHub repository search (e.g. "agent dashboard", "claude code monitor", "pixel agents", "agent swarm", "agent trace", "agent topology"), 40 results each, sorted by stars.
 - **1,047 unique repositories screened.** 376 passed a relevance filter (visual/monitor/trace words plus agent words, 8+ stars, not archived). Full list: [`screened-candidates.csv`](screened-candidates.csv).
-- The top ~110 were read by description. **18 were examined closely**: API stats, full README, stack signals, media links, stated limits. Raw READMEs are in the per-repo notes (not published; they quote third-party READMEs); stats in `deep.json`.
+- The top ~110 were read by description. **18 were examined closely**: API stats, full README, stack signals, media links, stated limits. Their stats are in [`deep.json`](deep.json); the full list of 1,047 is in [`screened_all.json`](screened_all.json).
 - Web search was used to find feature requests in issue trackers, so we can separate *built* from *wished for*.
 - Not done: I did not run each tool locally or download third-party screenshots (licensing). Media is linked, not copied. "Works" below means "the README documents it and the repo is active", not "I verified it by running it".
 

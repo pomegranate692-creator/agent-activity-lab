@@ -76,6 +76,8 @@
     function renderBadge(s) {
       if (s.source === 'simulated') setBadge('sim', 'SIMULATED', s.sourceNote || 'Scripted scenario. No real agents are running.');
       else if (s.source === 'claude-code') setBadge('live', 'LIVE · Claude Code session', s.sourceNote || '');
+      else if (s.source === 'claude-code-observed') setBadge('live', 'LIVE · observing your Claude Code', s.sourceNote || '');
+      else if (s.source === 'claude-code-observed-saved') setBadge('replay', 'SAVED · observed Claude Code session', s.sourceNote || '');
       else if (s.source === 'claude-code-saved') setBadge('replay', 'SAVED · real Claude Code session', s.sourceNote || '');
       else if (s.source === 'test-stub') setBadge('sim', 'TEST STUB · NOT CLAUDE', s.sourceNote || 'A test double produced these events. No real Claude Code ran.');
       else if (s.source === 'waiting') setBadge('replay', 'CONNECTED · WAITING FOR EVENTS', s.sourceNote || '');
@@ -89,6 +91,8 @@
     function renderInspector(s) {
       inspector.innerHTML = '';
       var a = selectedId && s.agents[selectedId];
+      inspector.classList.toggle('has-sel', !!a);
+      if (!a && global.__InspectorIdle) { try { global.__InspectorIdle(s, inspector); return; } catch (e) { inspector.innerHTML = ''; } } // optional: the app supplies its own no-selection content (e.g. a "Right now" list)
       var head = h('div', 'ac-ins-head', null, inspector);
       h('div', 'ac-ins-kicker', a ? 'SELECTED AGENT' : 'NO AGENT SELECTED', head);
       if (!a) {
@@ -97,11 +101,13 @@
         s.log.slice(-9).reverse().forEach(function (l) { var r = h('div', 'ac-log ac-k-' + l.kind, null, act); h('span', 'ac-log-t', U.fmtTime(l.t), r); h('span', 'ac-log-x', l.text, r); });
         return;
       }
-      var nm = h('div', 'ac-ins-name', null, head); h('span', 'ac-ins-dot ac-st-' + a.state, null, nm); h('span', null, a.name, nm);
-      h('div', 'ac-ins-role', a.role, head);
+      var shown = a.name; if (global.__AgentTitle) { try { shown = global.__AgentTitle(s, a) || a.name; } catch (e) {} } // optional: the app may name an agent by the job it was given
+      var nm = h('div', 'ac-ins-name', null, head); h('span', 'ac-ins-dot ac-st-' + a.state, null, nm); h('span', null, shown, nm);
+      h('div', 'ac-ins-role', shown !== a.name ? a.name + ' agent' : a.role, head);
       var chip = h('div', 'ac-chip ac-chip-' + a.state, a.state.toUpperCase() + (a.attempt > 1 ? ' · attempt ' + a.attempt : ''), head);
       function sec(label, text, cls) { if (!text) return; var d = h('div', 'ac-ins-sec', null, inspector); h('div', 'ac-ins-label', label, d); h('div', 'ac-ins-text ' + (cls || ''), text, d); }
-      sec('Current task', a.work || (a.state === 'waiting' ? 'Waiting for: ' + a.dependsOn.map(function (d) { return s.agents[d] ? s.agents[d].name : d; }).join(', ') : ''));
+      if (shown !== a.name) sec('Agent type', a.name);
+      sec('Current task', shown !== a.name ? '' : a.work || (a.state === 'waiting' ? 'Waiting for: ' + a.dependsOn.map(function (d) { return s.agents[d] ? s.agents[d].name : d; }).join(', ') : ''));
       if (a.state === 'working' && a.tool) sec('Tool in use', a.tool + (a.toolInput ? ' · ' + a.toolInput : ''), 'ac-mono');
       if (a.state === 'blocked') sec('Blocked', a.blockedReason + (a.needs ? ' (needs ' + a.needs + ')' : ''), 'ac-amber');
       if (a.state === 'failed') sec('Failure', a.error, 'ac-rust');

@@ -1,0 +1,5 @@
+{
+  "name": "agent-activity-lab-local",
+  "owner": { "name": "local" },
+  "plugins": [{ "name": "agent-activity-lab", "source": "./agent-activity-lab" }]
+}

@@ -15,6 +15,8 @@ import path from 'node:path';
 import crypto from 'node:crypto';
 import { spawn, execFile } from 'node:child_process';
 import { createStreamMapper } from './stream-mapper.mjs';
+import { Observer } from './observer.mjs';
+import { loadConfig } from '../shared/labconfig.mjs';
 
 export const HOME = process.env.AGENT_LAB_HOME || path.join(os.homedir(), '.agent-activity-lab');
 
@@ -38,9 +40,25 @@ export class SessionManager {
     this.cfg = Object.assign({ workspaceRoot: path.join(this.home, 'workspaces'), claudeBin: process.env.AGENT_LAB_CLAUDE_BIN || 'claude', maxBudgetUsd: 2, timeoutMs: 15 * 60 * 1000, model: null }, opts.config || {});
     this.engine = process.env.AGENT_LAB_CLAUDE_BIN || opts.claudeBin ? 'test-stub' : 'claude-code';
     if (opts.claudeBin) this.cfg.claudeBin = opts.claudeBin;
+    // Full Claude output (raw.jsonl) is OFF unless asked for: opts, config.json "recordFullOutput", or AGENT_LAB_RECORD_FULL_OUTPUT=1.
+    this.recordFullOutput = typeof opts.recordFullOutput === 'boolean' ? opts.recordFullOutput : loadConfig(this.home).recordFullOutput;
     this.sessDir = path.join(this.home, 'sessions');
     fs.mkdirSync(this.sessDir, { recursive: true, mode: 0o700 }); fs.mkdirSync(this.cfg.workspaceRoot, { recursive: true, mode: 0o700 });
-    this.active = new Map(); // id -> live session object
+    this.active = new Map(); // id -> live session object (tasks THIS service runs)
+    this.watch = new Map();  // id -> live record of a task OBSERVED through Claude Code hooks (see observer.mjs)
+    this.feedFns = new Set();
+    this.observer = new Observer(this, { staleMs: (opts.staleMinutes || 30) * 60 * 1000 });
+    this.observer.recover();
+  }
+  /* ---------- feed: the dashboard hears about new / changed sessions without polling ---------- */
+  onFeed(fn) { this.feedFns.add(fn); return () => this.feedFns.delete(fn); }
+  notifyFeed(meta) { for (const fn of this.feedFns) { try { fn(meta); } catch {} } }
+  isOwnWorkspace(cwd) { try { const r = fs.realpathSync(this.cfg.workspaceRoot); const c = fs.realpathSync(cwd); return c === r || c.startsWith(r + path.sep); } catch { return false; } }
+  /** Files an observed task wrote (from its Write/Edit tool calls) that still exist. Nothing else in the project folder is exposed. */
+  observedFiles(m) {
+    const out = [];
+    for (const name of [...new Set(m.outputs || [])]) { const f = path.resolve(m.workspace || '/', name); try { const st = fs.statSync(f); if (st.isFile()) out.push({ path: name, size: st.size, mtime: Math.round(st.mtimeMs) }); } catch {} }
+    return out;
   }
 
   /* ---------- environment probe ---------- */
@@ -57,14 +75,18 @@ export class SessionManager {
   list() {
     return fs.readdirSync(this.sessDir).filter(safeId).map((id) => this.meta(id)).filter(Boolean).sort((a, b) => b.createdAt - a.createdAt);
   }
-  meta(id) { if (!safeId(id)) return null; if (this.active.has(id)) return this.active.get(id).meta; try { return JSON.parse(fs.readFileSync(path.join(this.sessDir, id, 'meta.json'), 'utf8')); } catch { return null; } }
+  meta(id) { if (!safeId(id)) return null; if (this.active.has(id)) return this.active.get(id).meta; if (this.watch.has(id)) return this.watch.get(id).meta; try { return JSON.parse(fs.readFileSync(path.join(this.sessDir, id, 'meta.json'), 'utf8')); } catch { return null; } }
   events(id) {
-    if (!safeId(id)) return null; if (this.active.has(id)) return this.active.get(id).events.slice();
+    if (!safeId(id)) return null; if (this.active.has(id)) return this.active.get(id).events.slice(); if (this.watch.has(id)) return this.watch.get(id).events.slice();
     try { return fs.readFileSync(path.join(this.sessDir, id, 'events.jsonl'), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)); } catch { return null; }
   }
-  files(id) { const m = this.meta(id); return m ? this.scan(m.workspace) : null; }
+  files(id) { const m = this.meta(id); if (!m) return null; return m.origin === 'observed' ? this.observedFiles(m) : this.scan(m.workspace); }
   readFile(id, rel) {
-    const m = this.meta(id); if (!m) return null; const root = fs.realpathSync(m.workspace); let f;
+    const m = this.meta(id); if (!m) return null;
+    if (m.origin === 'observed') { // only files this task wrote, by recorded name
+      const rec = new Set(m.outputs || []); const name = String(rel); if (!rec.has(name)) return null; let f; try { f = fs.realpathSync(path.resolve(m.workspace || '/', name)); const st = fs.statSync(f); if (!st.isFile()) return null; if (st.size > 2 * 1024 * 1024) return { tooLarge: true, size: st.size, name: path.basename(f) }; return { name: path.basename(f), size: st.size, data: fs.readFileSync(f) }; } catch { return null; }
+    }
+    const root = fs.realpathSync(m.workspace); let f;
     try { f = fs.realpathSync(path.resolve(root, String(rel))); } catch { return null; }
     if (!(f === root || f.startsWith(root + path.sep))) return null; const st = fs.statSync(f); if (!st.isFile()) return null;
     if (st.size > 2 * 1024 * 1024) return { tooLarge: true, size: st.size, name: path.basename(f) };
@@ -78,9 +100,10 @@ export class SessionManager {
     return out.sort((a, b) => a.path.localeCompare(b.path));
   }
   subscribe(id, fn) {
-    const s = this.active.get(id); if (!s) return null; s.subs.add(fn); return () => s.subs.delete(fn);
+    const s = this.active.get(id) || this.watch.get(id); if (!s) return null; s.subs.add(fn); return () => s.subs.delete(fn);
   }
   running() { return [...this.active.values()].filter((s) => s.meta.status === 'running').map((s) => s.meta); }
+  runningAll() { return [...this.active.values(), ...this.watch.values()].map((s) => s.meta).filter((m) => m.status === 'running'); }
 
   /* ---------- follow-ups: per-agent retry and approval, by continuing the same conversation ---------- */
   agentStates(events) {
@@ -97,6 +120,7 @@ export class SessionManager {
   }
   followUp(parentId, { kind, agentId = null, rules = [] } = {}) {
     const parent = this.meta(parentId); if (!parent) throw Object.assign(new Error('No such session.'), { status: 404 });
+    if (parent.origin === 'observed') throw Object.assign(new Error('This task was observed from your own Claude Code session. The dashboard does not control it; continue it in Claude Code.'), { status: 409 });
     const bad = (m, st = 400, code) => Object.assign(new Error(m), { status: st, code });
     if (parent.status === 'running') throw bad('The session is still running. Headless Claude Code cannot be changed mid-run; stop it or wait for it to finish.', 409);
     if (!parent.claudeSessionId) throw bad('This session has no Claude Code conversation id (it was recorded before the run produced one), so it cannot be continued. Use Retry to start a new run.', 409, 'no_session_id');
@@ -138,10 +162,10 @@ export class SessionManager {
     const wsReal = fs.realpathSync(ws); // Claude Code reports the resolved path (e.g. /private/tmp on macOS), so use it everywhere
     if (!wsReal.startsWith(rootReal + path.sep)) throw Object.assign(new Error('Workspace escaped the approved root.'), { status: 500 });
     fs.mkdirSync(dir, { recursive: true, mode: 0o700 });
-    const meta = { id, prompt, title: cut(prompt.replace(/\s+/g, ' '), 90), policy, approved: extra, resumeOf, followUp, status: 'running', engine: this.engine, createdAt: Date.now(), startedAt: Date.now(), endedAt: null, workspace: wsReal, retryOf, exitCode: null, error: null, resultText: null, denials: [], stats: { toolCalls: 0, subagents: 0, turns: null, costUsd: null, durationMs: null }, files: [], model: null };
+    const meta = { id, prompt, title: cut(prompt.replace(/\s+/g, ' '), 90), policy, approved: extra, resumeOf, followUp, status: 'running', fullOutput: this.recordFullOutput, engine: this.engine, createdAt: Date.now(), startedAt: Date.now(), endedAt: null, workspace: wsReal, retryOf, exitCode: null, error: null, resultText: null, denials: [], stats: { toolCalls: 0, subagents: 0, turns: null, costUsd: null, durationMs: null }, files: [], model: null };
     const s = { meta, events: [], subs: new Set(), child: null, buf: '', tail: '', stopRequested: false, timer: null, dir, resumeId, pre: parent ? new Map(this.scan(wsReal).map((f) => [f.path, f.mtime])) : null };
     s.mapper = createStreamMapper({ now: () => Date.now() - meta.startedAt, workspace: wsReal, title: meta.title, prompt });
-    this.active.set(id, s); this.save(s);
+    this.active.set(id, s); this.save(s); this.notifyFeed(meta);
     this.emit(s, s.mapper.begin());
     this.start(s, pol, extra, prompt);
     return meta;
@@ -168,7 +192,7 @@ export class SessionManager {
     s.buf += d; let i;
     while ((i = s.buf.indexOf('\n')) >= 0) {
       const line = s.buf.slice(0, i).trim(); s.buf = s.buf.slice(i + 1); if (!line) continue;
-      try { fs.appendFileSync(path.join(s.dir, 'raw.jsonl'), line + '\n'); } catch {}
+      if (s.meta.fullOutput) { try { fs.appendFileSync(path.join(s.dir, 'raw.jsonl'), line + '\n', { mode: 0o600 }); } catch {} } // debug only, off by default
       let obj; try { obj = JSON.parse(line); } catch { s.tail = (s.tail + '\n' + line).slice(-4000); continue; }
       if (obj.type === 'system' && obj.subtype === 'init') { s.meta.model = obj.model || null; this.save(s); }
       if (typeof obj.session_id === 'string' && /^[\w-]{8,80}$/.test(obj.session_id) && !s.meta.claudeSessionId) { s.meta.claudeSessionId = obj.session_id; this.save(s); } // needed to continue this conversation later (--resume)
@@ -207,7 +231,7 @@ export class SessionManager {
     else if (message && status !== 'succeeded') m.error = message;
     m.status = status; m.endedAt = Date.now(); m.files = files; if (message && status !== 'succeeded') m.error = message;
     const st = s.mapper.stats(); m.stats.toolCalls = st.toolCalls; m.stats.subagents = st.subagents; if (m.stats.durationMs == null) m.stats.durationMs = m.endedAt - m.startedAt;
-    this.save(s); this.active.delete(m.id);
+    this.save(s); this.active.delete(m.id); this.notifyFeed(m);
     for (const fn of s.subs) { try { fn({ type: '__end', status }); } catch {} }
   }
 

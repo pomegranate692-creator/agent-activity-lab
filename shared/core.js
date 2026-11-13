@@ -18,6 +18,7 @@
  *   output_produced  { agentId, outputId, name, kind }
  *   agent_completed  { agentId }
  *   task_finished    { status, outputIds, summary }
+ *   task_resumed     { reason }   a finished task started working again (background agents that report back after the main turn ended)
  *
  * Agent states: queued | waiting | working | blocked | failed | done
  *   waiting = spawned but a dependency is not done yet
@@ -148,6 +149,10 @@
         pushRecent(a, t, 'Completed', 'done'); logLine(s, t, a.name + ' completed', a.id, 'done');
         for (var k = 0; k < s.order.length; k++) { var o = s.agents[s.order[k]]; if (o.state === 'waiting' && depsMet(s, o)) o.state = 'queued'; }
         break;
+      case 'task_resumed':
+        s.finished = false; s.finishedInfo = null;
+        for (var rk = 0; rk < s.order.length; rk++) { var ra = s.agents[s.order[rk]]; if (ra && !ra.parentId && ra.state === 'done') { ra.state = 'working'; ra.endedAt = null; } }
+        logLine(s, t, 'Task resumed: ' + (ev.reason || ''), null, 'task'); break;
       case 'task_finished':
         s.finished = true; s.finishedInfo = { status: ev.status, summary: ev.summary, outputIds: ev.outputIds || [] };
         logLine(s, t, 'Task finished (' + ev.status + '): ' + (ev.summary || ''), null, 'task'); break;

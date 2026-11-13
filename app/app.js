@@ -4,14 +4,15 @@
   var reg = g.__AppViews, byId = {};
   reg.views.forEach(function (v) { byId[v.id] = v; });
   var CFG = g.__AppConfig || {};
-  var ORDER = CFG.order || [['cards', 'Agents'], ['tools', 'Tool stream'], ['results', 'Output']];
+  var ORDER = CFG.order || [['web', 'Web'], ['tools', 'Activity'], ['results', 'Output']];
+  var MAIN = byId.web && !CFG.order ? 'web' : 'cards'; // the main view: the Living Web
   var GRID = !!CFG.grid; // "All ten" mode: a live tile grid of every design; click a tile to open it
   var params = new URLSearchParams(location.search);
   function el(tag, cls, text, parent) { var e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; if (parent) parent.appendChild(e); return e; }
 
   g.AgentChrome.mount = reg.realMount;
   g.AgentChrome.mount({
-    id: CFG.num || 'LAB', name: CFG.title || 'Agent Activity Lab', tagline: CFG.tagline || 'Command center for AI agent tasks',
+    id: CFG.num || 'LAB', name: CFG.title || 'Agent Activity Lab', tagline: CFG.tagline || 'Living Web',
     create: function (stage, ctx) {
       var root = el('div', 'ap-root', null, stage);
       var need = el('div', 'ap-need', null, root); need.setAttribute('role', 'region'); need.setAttribute('aria-label', 'Needs you');
@@ -74,7 +75,7 @@
         s.order.forEach(function (id) { var a = s.agents[id]; if (a.state === 'blocked') items.push({ id: id, k: 'blocked', who: a.label || a.name, why: a.blockedReason || 'blocked' }); else if (a.state === 'failed') items.push({ id: id, k: 'failed', who: a.label || a.name, why: a.error || 'failed' }); });
         var key = items.map(function (i) { return i.id + i.k + i.why; }).join('|') + '|' + ctx.selected();
         if (need.dataset.key === key) return; need.dataset.key = key; need.innerHTML = '';
-        el('span', 'ap-need-label', 'NEEDS YOU', need);
+        el('span', 'ap-need-label', 'NEEDS YOU', need); need.classList.toggle('ap-need-clear', !items.length);
         if (!items.length) { el('span', 'ap-need-none', s.finished ? 'Nothing is blocked or failed.' : 'Nothing is blocked or failed right now.', need); return; }
         items.forEach(function (i) {
           var b = el('button', 'ap-pill ap-pill-' + i.k, null, need); b.type = 'button'; b.title = i.who + ' ' + i.k + ': ' + i.why; b.setAttribute('aria-label', i.who + ' ' + i.k + ': ' + i.why);
@@ -90,18 +91,20 @@
         var resultOk = s.outputs.length > 0 || s.finished;
         var rt = tabEls['05']; if (rt) { rt.setAttribute('aria-disabled', String(!resultOk)); rt.title = resultOk ? '' : 'Available once the task has produced outputs or finished'; }
         if (!userChose) {
-          if (!GRID && inst.tools && inst.cards) { var want = s.order.length && s.order.length <= 2 ? 'tools' : 'cards'; if (s.order.length && want !== active) show(want); }
+          if (!GRID && inst[MAIN] && s.order.length && active !== MAIN) show(MAIN); // the Living Web is the centrepiece; Activity and Output are supporting views
         }
       }
-      var DEFAULT = inst.cards ? 'cards' : ORDER.map(function (o) { return o[0]; }).filter(function (id) { return inst[id]; })[0];
+      var DEFAULT = inst[MAIN] ? MAIN : ORDER.map(function (o) { return o[0]; }).filter(function (id) { return inst[id]; })[0];
       show(GRID ? 'grid' : DEFAULT);
       /* real task execution: only when the local service is present; otherwise demo mode (simulated scenario only) */
       var Lab = g.__Lab;
       if (tabEls.results) tabEls.results.style.display = 'none';
+      var wait = null; if (Lab && !CFG.order && Lab.local) { wait = el('div', 'ap-cmd ap-cmd-demo', null, null); wait.textContent = 'Connecting to the local Agent Activity Lab service…'; setTimeout(function () { if (wait) root.insertBefore(wait, root.firstChild); }, 600); }
       if (Lab && !CFG.order) Lab.ready.then(function (info) {
+        if (wait) { if (wait.parentNode) wait.parentNode.removeChild(wait); wait = null; }
         if (!info) { var nm = el('div', 'ap-cmd ap-cmd-demo', null, null); nm.textContent = 'DEMO MODE · simulated scenario only. Live task execution needs the local service: run  node server/lab-server.mjs  and open the address it prints.'; root.insertBefore(nm, root.firstChild); return; }
         if (tabEls.results) tabEls.results.style.display = '';
-        Lab.afterConnect = function () { userChose = false; if (active === 'results') show('cards'); };
+        Lab.afterConnect = function () { userChose = false; if (active === 'results') show(MAIN); };
         if (g.__agentlab && g.__agentlab.idle) g.__agentlab.idle(); // no scripted demo behind a live service
         Lab.mount(root, { fresh: function () { userChose = false; } });
       });

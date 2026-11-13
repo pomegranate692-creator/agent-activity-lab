@@ -17,6 +17,7 @@ const waitDone = async (id) => { for (let i = 0; i < 100; i++) { const m = (awai
 
 /* ---- security ---- */
 ok((await raw({ path: '/api/sessions', headers: { host: '127.0.0.1:' + lab.port } })).s === 401, 'no token -> 401');
+ok((await raw({ path: '/api/sessions', headers: { host: '127.0.0.1:' + lab.port, 'x-lab-token': 'f'.repeat(64) } })).s === 401, 'wrong token -> 401');
 ok((await raw({ path: '/api/sessions', headers: { host: 'evil.example:' + lab.port, 'x-lab-token': token } })).s === 421, 'wrong Host (DNS rebinding) -> 421');
 ok((await raw({ path: '/api/bootstrap', headers: { host: '127.0.0.1:' + lab.port } })).s === 403, 'bootstrap without same-origin -> 403');
 ok((await raw({ path: '/api/bootstrap', headers: { host: '127.0.0.1:' + lab.port, 'sec-fetch-site': 'cross-site' } })).s === 403, 'bootstrap cross-site -> 403');
@@ -51,7 +52,7 @@ const files = (await api(`/api/sessions/${c.b.id}/files`)).b.files.map((f) => f.
 const fr = await raw({ path: `/api/sessions/${c.b.id}/file?path=analyze_csv.py`, headers: { host: '127.0.0.1:' + lab.port, 'x-lab-token': token } }); ok(fr.s === 200 && /text\/plain/.test(fr.h['content-type']) && /import csv/.test(fr.d) && /sandbox/.test(fr.h['content-security-policy']), 'file served as sandboxed text/plain');
 ok((await raw({ path: `/api/sessions/${c.b.id}/file?path=../../token`, headers: { host: '127.0.0.1:' + lab.port, 'x-lab-token': token } })).s === 404, 'path traversal -> 404');
 ok((await raw({ path: `/api/sessions/${c.b.id}/file?path=/etc/hosts`, headers: { host: '127.0.0.1:' + lab.port, 'x-lab-token': token } })).s === 404, 'absolute path outside workspace -> 404');
-ok(fs.existsSync(path.join(home, 'sessions', c.b.id, 'events.jsonl')) && fs.existsSync(path.join(home, 'sessions', c.b.id, 'raw.jsonl')), 'history persisted (events + raw)');
+ok(fs.existsSync(path.join(home, 'sessions', c.b.id, 'events.jsonl')) && !fs.existsSync(path.join(home, 'sessions', c.b.id, 'raw.jsonl')), 'history persisted as activity events; full output NOT recorded by default');
 ok((await api('/api/sessions')).b.sessions[0].id === c.b.id, 'session appears in history');
 // the SSE endpoint replays history for a finished session with the SAVED label (test stub keeps its own label)
 const sse = await new Promise((res) => { const q = http.get({ hostname: '127.0.0.1', port: lab.port, path: `/s/${token}/${c.b.id}/events`, headers: { host: '127.0.0.1:' + lab.port } }, (r) => { let d = ''; r.on('data', (x) => { d += x; if (d.includes('task_finished')) { q.destroy(); res(d); } }); }); setTimeout(() => res(''), 3000); });

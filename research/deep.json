@@ -1,0 +1,562 @@
+[
+ {
+  "repo": "pixel-agents-hq/pixel-agents",
+  "stars": 10145,
+  "forks": 1729,
+  "issues": 104,
+  "created": "2026-02-08",
+  "pushed": "2026-11-10",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": null,
+  "desc": "Pixel office.",
+  "release": "v1.6.0",
+  "release_date": "2026-11-10",
+  "images": [
+   "webview-ui/public/banner.png",
+   "webview-ui/public/office.png",
+   "webview-ui/public/characters.png"
+  ],
+  "videos": [],
+  "stack": [
+   "JSONL",
+   "hook",
+   "hooks",
+   "tmux"
+  ],
+  "limits": [
+   "Claude Code is supported today; Codex, Gemini, Cursor, and others are on the roadmap. Want to add support for your favourite CLI? Join our [Discord](https://discord.gg/Yk7jXebv9H) and let us know!"
+  ],
+  "readme_len": 14735
+ },
+ {
+  "repo": "patoles/agent-flow",
+  "stars": 1777,
+  "forks": 218,
+  "issues": 18,
+  "created": "2026-03-21",
+  "pushed": "2026-10-29",
+  "license": "Apache-2.0",
+  "lang": "TypeScript",
+  "homepage": "https://marketplace.visualstudio.com/items?itemName=simon-p.agent-flow",
+  "desc": "Real-time visualization of Claude Code agent orchestration \u2014 see your agents think, branch, and coordinate as they work.",
+  "release": "v0.9.4",
+  "release_date": "2026-10-28",
+  "images": [
+   "https://res.cloudinary.com/dxlvclh9c/image/upload/v1773924941/screenshot_e7yox3.png"
+  ],
+  "videos": [
+   "https://www.youtube.com/watch?v=Ud6eDrFN-TA"
+  ],
+  "stack": [
+   "JSONL",
+   "Next.js",
+   "SSE",
+   "hook",
+   "hooks"
+  ],
+  "limits": [],
+  "readme_len": 7956
+ },
+ {
+  "repo": "matt1398/claude-devtools",
+  "stars": 4035,
+  "forks": 308,
+  "issues": 60,
+  "created": "2026-02-07",
+  "pushed": "2026-09-26",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": "https://claude-dev.tools",
+  "desc": "The missing DevTools for Claude Code \u2014 inspect session logs, tool calls, token usage, subagents, and context window in a visual UI. Free, open source.",
+  "release": "v0.5.0",
+  "release_date": "2026-05-13",
+  "images": [
+   "resources/claude.png",
+   "https://github.com/user-attachments/assets/9ff4a5a7-bcf6-47fb-8ca5-d4021540804b",
+   "public/memory.png"
+  ],
+  "videos": [
+   "https://github.com/user-attachments/assets/2b420b2c-c4af-4d10-a679-c83269f8ee99",
+   "https://github.com/user-attachments/assets/9ff4a5a7-bcf6-47fb-8ca5-d4021540804b",
+   "https://github.com/user-attachments/assets/976dfc47-4d3c-4539-9be2-218037b3dc37"
+  ],
+  "stack": [
+   "Electron",
+   "JSONL",
+   "TypeScript"
+  ],
+  "limits": [],
+  "readme_len": 13372
+ },
+ {
+  "repo": "graykode/abtop",
+  "stars": 3836,
+  "forks": 347,
+  "issues": 37,
+  "created": "2026-03-29",
+  "pushed": "2026-09-14",
+  "license": "MIT",
+  "lang": "Rust",
+  "homepage": "",
+  "desc": "Like htop, but for AI coding agents. Monitor Claude    Code & Codex CLI sessions, tokens, context window,    rate limits, and ports in real-time.",
+  "release": "v0.5.5",
+  "release_date": "2026-09-14",
+  "images": [
+   "https://raw.githubusercontent.com/graykode/abtop/main/assets/demo.gif",
+   "https://raw.githubusercontent.com/graykode/abtop/main/assets/themes/btop.png",
+   "https://raw.githubusercontent.com/graykode/abtop/main/assets/themes/dracula.png"
+  ],
+  "videos": [
+   "https://raw.githubusercontent.com/graykode/abtop/main/assets/demo.gif"
+  ],
+  "stack": [
+   "SQLite",
+   "hook",
+   "tmux"
+  ],
+  "limits": [],
+  "readme_len": 9340
+ },
+ {
+  "repo": "disler/claude-code-hooks-multi-agent-observability",
+  "stars": 1566,
+  "forks": 386,
+  "issues": 31,
+  "created": "2025-07-13",
+  "pushed": "2026-02-08",
+  "license": null,
+  "lang": "Python",
+  "homepage": null,
+  "desc": "Real-time monitoring for Claude Code agents through simple hook event tracking.",
+  "release": null,
+  "release_date": "",
+  "images": [
+   "images/app.png",
+   "images/AgentDataFlowV2.gif",
+   "images/claude-code-multi-agent-orchestration.png"
+  ],
+  "videos": [
+   "https://youtu.be/RpUTF_U4kiw",
+   "https://youtu.be/RpUTF_U4kiw"
+  ],
+  "stack": [
+   "Bun",
+   "Canvas",
+   "MCP",
+   "Python",
+   "SQLite",
+   "Tailwind",
+   "TypeScript",
+   "Vite",
+   "Vue",
+   "WebSocket",
+   "hook",
+   "hooks"
+  ],
+  "limits": [
+   "Spot failures early** \u2014 PostToolUseFailure and PermissionRequest events surface issues before they cascade"
+  ],
+  "readme_len": 21466
+ },
+ {
+  "repo": "hoangsonww/Claude-Code-Agent-Monitor",
+  "stars": 1169,
+  "forks": 263,
+  "issues": 43,
+  "created": "2026-03-05",
+  "pushed": "2026-11-08",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": "https://hoangsonww.github.io/Claude-Code-Agent-Monitor/",
+  "desc": "\ud83d\ude80 A real-time monitoring dashboard for Claude Code & Codex, built with SQLite3, Node.js, Express, React, Vite, TailwindCSS, & WebSockets. It tracks sessions, agent activity, tool usage, and subagent orchestration, providing live analytics, a Kanban status board, status notifications, a cute buddy, & an interactive web UI/MacOS/Windows native app.",
+  "release": "v2.4.5",
+  "release_date": "2026-10-23",
+  "images": [
+   "images/readme/analytics.png",
+   "images/readme/session-conversation.png",
+   "images/readme/workflows.png"
+  ],
+  "videos": [],
+  "stack": [
+   "D3",
+   "Electron",
+   "Express",
+   "MCP",
+   "OpenTelemetry",
+   "Python",
+   "React",
+   "SQLite",
+   "SSE",
+   "Tailwind",
+   "TypeScript",
+   "Vite",
+   "WebSocket",
+   "d3",
+   "hook",
+   "hooks"
+  ],
+  "limits": [],
+  "readme_len": 15690
+ },
+ {
+  "repo": "Dimillian/CodexMonitor",
+  "stars": 4366,
+  "forks": 419,
+  "issues": 95,
+  "created": "2026-01-11",
+  "pushed": "2026-03-26",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": "https://www.codexmonitor.app",
+  "desc": "An app to monitor the (Codex) situation",
+  "release": "v0.7.67",
+  "release_date": "2026-03-24",
+  "images": [
+   "screenshot.png"
+  ],
+  "videos": [],
+  "stack": [
+   "Rust",
+   "Tauri",
+   "TypeScript",
+   "hooks"
+  ],
+  "limits": [
+   "Terminal dock with multiple tabs for background commands (experimental).",
+   "iOS Support (WIP)",
+   "Use the end-to-end script to archive, upload, configure compliance, assign beta group, and submit for beta review.",
+   "Feature settings are supported in the UI and synced to `$CODEX_HOME/config.toml` (or `~/.codex/config.toml`) on load/save. Stable: Collaboration modes (`features.collaboration_modes`), personality (`personality`), and Background terminal (`features.unified_exec`). Experimental: Apps (`features.apps`). Steering capability still follows Codex `features.steer`, but follow-up default behavior is controlled in Settings \u2192 Composer."
+  ],
+  "readme_len": 14107
+ },
+ {
+  "repo": "GreenSheep01201/claw-empire",
+  "stars": 1445,
+  "forks": 284,
+  "issues": 18,
+  "created": "2026-02-18",
+  "pushed": "2026-03-16",
+  "license": "Apache-2.0",
+  "lang": "TypeScript",
+  "homepage": "",
+  "desc": "Command Your AI Agent Empire from the CEO Desk \u2014 A local-first AI agent office simulator that orchestrates CLI, OAuth, and API-connected agents (Claude Code, Codex CLI, Gemini CLI, OpenCode, and more) as a virtual autonomous company.",
+  "release": "v2.0.4",
+  "release_date": "2026-03-12",
+  "images": [
+   "public/claw-empire.svg",
+   "Sample_Img/Office.png",
+   "Sample_Img/Dashboard.png"
+  ],
+  "videos": [],
+  "stack": [
+   "Express",
+   "Go",
+   "PixiJS",
+   "React",
+   "SQLite",
+   "Tailwind",
+   "TypeScript",
+   "Vite",
+   "WebSocket",
+   "hooks"
+  ],
+  "limits": [
+   "| **Kanban Task Board**          | Full task lifecycle \u2014 Inbox, Planned, Collaborating, In Progress, Review, Done \u2014 with drag-and-drop                                                                                                         |",
+   "| **Meeting System**             | Planned and ad-hoc meetings with AI-generated minutes and multi-round review                                                                                                                                |"
+  ],
+  "readme_len": 49721
+ },
+ {
+  "repo": "AgentSystemLabs/agent-office",
+  "stars": 905,
+  "forks": 282,
+  "issues": 61,
+  "created": "2026-09-26",
+  "pushed": "2026-10-09",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": null,
+  "desc": "A cartoon 3D office where your team hires Claude Code workers at desks, shares live terminals, talks over voice, and tracks GitHub issues and PRs.",
+  "release": "v0.1.211",
+  "release_date": "2026-10-09",
+  "images": [],
+  "videos": [],
+  "stack": [
+   "Go",
+   "MCP",
+   "TypeScript",
+   "Vite"
+  ],
+  "limits": [
+   "Work in progress.** Agent Office is built for one person's workflow \u2014 mine \u2014 and it changes fast as I iterate on it."
+  ],
+  "readme_len": 32563
+ },
+ {
+  "repo": "Kirito14IT/prompt-spider-ui",
+  "stars": 112,
+  "forks": 27,
+  "issues": 0,
+  "created": "2026-10-13",
+  "pushed": "2026-11-03",
+  "license": "MIT",
+  "lang": "JavaScript",
+  "homepage": "",
+  "desc": "\u539f\u751f JavaScript + Canvas 2D \u7684\u673a\u68b0\u8718\u86db\u53ef\u89c6\u5316 UI\uff1b\u53ef\u9009 MCP \u63a5\u5165\u81ea\u5df1\u7684 Agent\uff0c\u5b9e\u65f6\u5c55\u793a\u4efb\u52a1\uff0c\u652f\u6301\u4e09\u5957\u5e03\u5c40\u3001\u4e3b\u9898\u5b9a\u5236\u3001JSON \u56de\u653e\u4e0e\u72ec\u7acb\u9879\u76ee\u5bfc\u51fa\u3002 | Canvas spider UI with live Agent visualization via MCP.",
+  "release": null,
+  "release_date": "",
+  "images": [
+   "docs/brand/logo-animated.gif",
+   "docs/preview.gif",
+   "docs/nebula-preview.gif"
+  ],
+  "videos": [],
+  "stack": [
+   "Canvas",
+   "MCP"
+  ],
+  "limits": [],
+  "readme_len": 11893
+ },
+ {
+  "repo": "aemrebarut/herdr-dagr",
+  "stars": 149,
+  "forks": 8,
+  "issues": 0,
+  "created": "2026-08-14",
+  "pushed": "2026-08-23",
+  "license": "Apache-2.0",
+  "lang": "Rust",
+  "homepage": null,
+  "desc": "Your agent swarm as a live DAG: an orchestration graph with attempts, review gates, and evidence, in a herdr split pane.",
+  "release": "v0.3.1",
+  "release_date": "2026-08-21",
+  "images": [
+   "assets/pane-cockpit.png",
+   "assets/pane-sidecar.png"
+  ],
+  "videos": [],
+  "stack": [
+   "Rust"
+  ],
+  "limits": [
+   "capture); `dagr stats` reports flow analytics (age, WIP, rework,"
+  ],
+  "readme_len": 16618
+ },
+ {
+  "repo": "W17ant/Claude-Office",
+  "stars": 352,
+  "forks": 88,
+  "issues": 0,
+  "created": "2026-03-17",
+  "pushed": "2026-11-10",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": null,
+  "desc": "A pixel art virtual office that visualizes your AI agents working in real-time. Claude Code hooks, WebSocket events, and isometric pixel art.",
+  "release": "v1.1.2",
+  "release_date": "2026-11-09",
+  "images": [
+   "docs/images/claude-crab.gif",
+   "docs/images/ultracode.svg",
+   "docs/images/claudes-turn.gif"
+  ],
+  "videos": [],
+  "stack": [
+   "Electron",
+   "Express",
+   "React",
+   "SQLite",
+   "TypeScript",
+   "Vite",
+   "WebSocket",
+   "hook",
+   "hooks"
+  ],
+  "limits": [],
+  "readme_len": 22084
+ },
+ {
+  "repo": "ringhyacinth/star-office-ui",
+  "stars": 7569,
+  "forks": 805,
+  "issues": 21,
+  "created": "2026-02-26",
+  "pushed": "2026-03-11",
+  "license": "NOASSERTION",
+  "lang": "HTML",
+  "homepage": "",
+  "desc": "A pixel office for your OpenClaw: turn invisible work states into a cozy little space with characters, daily notes, and guest agents. Code under MIT; art assets for non-commercial learning only.",
+  "release": "v1.0.0",
+  "release_date": "2026-03-06",
+  "images": [
+   "docs/screenshots/readme-cover-2.jpg",
+   "docs/screenshots/readme-cover-1.jpg"
+  ],
+  "videos": [],
+  "stack": [
+   "Electron",
+   "Flask",
+   "Python"
+  ],
+  "limits": [],
+  "readme_len": 7281
+ },
+ {
+  "repo": "everettjf/coding-agent-visualizer",
+  "stars": 20,
+  "forks": 1,
+  "issues": 3,
+  "created": "2026-06-15",
+  "pushed": "2026-06-23",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": "https://everettjf.github.io/coding-agent-visualizer/",
+  "desc": "Coding agents like Claude Code and OpenAI Codex quietly record every session to disk as JSONL \u2014 messages, reasoning, tool calls, file edits and token usage. That data is a goldmine, but it lives in raw log files no one reads.",
+  "release": "v0.1.4",
+  "release_date": "2026-06-23",
+  "images": [
+   "assets/banner.svg",
+   "assets/screenshots/waterfall.png",
+   "assets/screenshots/graph.png"
+  ],
+  "videos": [],
+  "stack": [
+   "Bun",
+   "JSONL",
+   "React",
+   "SQLite",
+   "Tailwind",
+   "TypeScript",
+   "d3"
+  ],
+  "limits": [],
+  "readme_len": 12090
+ },
+ {
+  "repo": "FankChen/tracecrate",
+  "stars": 195,
+  "forks": 2,
+  "issues": 5,
+  "created": "2026-09-10",
+  "pushed": "2026-10-22",
+  "license": "MIT",
+  "lang": "TypeScript",
+  "homepage": "https://fankchen.github.io/tracecrate/",
+  "desc": "Local-first AI agent trace workbench. Inspect Claude Code, Codex and OTLP logs, compare runs, and export privacy-conscious reports. No backend or API keys.",
+  "release": "v0.2.0",
+  "release_date": "2026-09-13",
+  "images": [
+   "docs/screenshots/tracecrate-v0.2-desktop.png"
+  ],
+  "videos": [],
+  "stack": [
+   "JSONL",
+   "MCP",
+   "OTLP",
+   "OpenTelemetry",
+   "TypeScript",
+   "Vite"
+  ],
+  "limits": [
+   "[Open contribution tasks and roadmap](docs/roadmap.md) \u00b7 [Organic launch plan and draft copy](docs/launch-plan.md) \u00b7 [Changelog](CHANGELOG.md)."
+  ],
+  "readme_len": 10514
+ },
+ {
+  "repo": "jihe520/agent-graph",
+  "stars": 96,
+  "forks": 7,
+  "issues": 1,
+  "created": "2026-11-04",
+  "pushed": "2026-11-10",
+  "license": "MIT",
+  "lang": "HTML",
+  "homepage": "https://jihe520.github.io/agent-graph/",
+  "desc": "\u628a ADE\uff08agent \u5f00\u53d1\u73af\u5883\uff09\u7684\u4e3b\u4ea4\u4e92\u5143\u7d20\u4ece\u300c\u4f1a\u8bdd\u300d\u6362\u6210\u300cgit graph\u300d\u7684\u4e00\u6b21\u4ea4\u4e92\u63a2\u7d22",
+  "release": null,
+  "release_date": "",
+  "images": [
+   "assets/cover.png"
+  ],
+  "videos": [
+   "https://github.com/user-attachments/assets/123cfb00-07ef-4b2b-b531-33635909f158"
+  ],
+  "stack": [],
+  "limits": [],
+  "readme_len": 5614
+ },
+ {
+  "repo": "Octane0411/open-vibe-island",
+  "stars": 2070,
+  "forks": 363,
+  "issues": 226,
+  "created": "2026-04-02",
+  "pushed": "2026-11-02",
+  "license": "GPL-3.0",
+  "lang": "Swift",
+  "homepage": "",
+  "desc": "Native macOS control center for AI coding agents \u2014 monitor sessions, approve actions, and jump back instantly.",
+  "release": "v1.3.2",
+  "release_date": "2026-11-02",
+  "images": [
+   "docs/images/readme-banner.svg",
+   "docs/images/demo.gif",
+   "docs/images/wechat-group.jpg"
+  ],
+  "videos": [],
+  "stack": [
+   "Electron",
+   "JSONL",
+   "SQLite",
+   "Swift",
+   "SwiftUI",
+   "TypeScript",
+   "hook",
+   "hooks",
+   "tmux"
+  ],
+  "limits": [
+   "<a href=\"docs/roadmap.md\">Roadmap</a> \u00b7",
+   "Kimi CLI** \u2014 Hook-based integration via `~/.kimi/config.toml` `[[hooks]]` array (Moonshot AI). Kimi's hook payload is byte-compatible with Claude Code, so Open Island reuses the Claude decode path and adds a dedicated TOML installer. Subscribes to `SessionStart`, `UserPromptSubmit`, `Stop`, `Notification`, `PreToolUse`, and `PostToolUse`. Requires the Kimi CLI Hooks Beta. Use `--source kimi` with the hooks binary. Manage installation from the Settings window, or via CLI:"
+  ],
+  "readme_len": 25255
+ },
+ {
+  "repo": "NateBJones-Projects/ringer",
+  "stars": 313,
+  "forks": 145,
+  "issues": 89,
+  "created": "2026-07-03",
+  "pushed": "2026-10-29",
+  "license": "NOASSERTION",
+  "lang": "Python",
+  "homepage": null,
+  "desc": "Ringer \u2014 parallel AI-agent swarm orchestrator. Ringside \u2014 its native mission-control HUD. Fable-quality output without Fable-level burn.",
+  "release": "v0.1.1",
+  "release_date": "2026-07-03",
+  "images": [
+   "docs/hero.png",
+   "docs/engines.png",
+   "docs/ringside.png"
+  ],
+  "videos": [],
+  "stack": [
+   "JSONL",
+   "Python",
+   "Rust",
+   "Tauri",
+   "hook",
+   "hooks"
+  ],
+  "limits": [
+   "\"key\": \"alpha\",",
+   "\"spec\": \"Create alpha.txt containing exactly one line: alpha ready\\nEnd the file with exactly one newline. Do not add punctuation.\",",
+   "\"check\": \"printf 'alpha ready\\\\n' | diff -u - alpha.txt || { echo 'FAIL: alpha.txt must contain exactly alpha ready followed by one newline'; exit 1; }\",",
+   "\"expect_files\": [\"alpha.txt\"]"
+  ],
+  "readme_len": 31302
+ }
+]

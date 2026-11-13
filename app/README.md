@@ -1,6 +1,6 @@
 # The app: Agent Activity Lab command center
 
-One cohesive application. **The primary visualization is the Card tree** (chosen from ten designs; see `docs/DESIGN-REVIEW.md`), refined for live runs. The other designs are kept in `archive/`.
+One cohesive application. **The primary visualization is the Living Web** (see the Living Web section below). It replaced the Card tree, which won the first round of ten designs (`docs/DESIGN-REVIEW.md`). The other designs are kept in `archive/`.
 
 | Part | What it is |
 |---|---|
@@ -16,7 +16,7 @@ One cohesive application. **The primary visualization is the Card tree** (chosen
 ## Run
 
 ```bash
-node server/lab-server.mjs        # real task execution + this app: http://127.0.0.1:7777/app/index.html   (see server/README.md)
+node server/lab-server.mjs        # real task execution + this app: http://127.0.0.1:47821/app/index.html   (see server/README.md; automatic mode needs no command at all)
 node shared/adapter-server.mjs    # demo/simulation only
 # or open app/index.html from disk, or visit the GitHub Pages site: DEMO MODE (simulated scenario only)
 ```
@@ -40,3 +40,18 @@ Params: `?scenario=stress` (30 simulated agents), `?t=12000&autoplay=0`, `?reduc
 ## Next
 
 Per-card actions (approve, retry) once mid-run approval is possible; per-agent filtering linked between Agents and Tool stream; concurrent tasks.
+
+## Look (black canvas)
+
+The app overrides the shared mineral tokens at the top of `app.css` (the older prototypes keep `shared/theme.css`).
+Background `#050608`, cards `#11151C`, raised `#191F29`, borders `#28313D`, text `#F5F7FA` / `#929BAC`.
+Blue `#4DA3FF` = working, violet `#A77BFF` = subagents and delegation lines, mint `#3DE5B3` = done, amber `#FFB84D` = waiting / needs you, coral `#FF6572` = failed.
+Motion in the Card tree (`cards/cards.css`, `cards/cards.js`): a card slides out of its parent with a violet ring when the agent is created, the connection carries moving dots while that subagent is working, working cards glow, a mint ring marks completion. Rings fire only for changes seen live, never when a saved record is opened. All of it stops under "Reduce motion" or the system setting.
+
+## Living Web (the main view)
+
+`../shared/livingweb.js` draws the state as one SVG string: Claude Code is the hub, each real subagent is a node around it (diagonal slots up to four, then six, eight, a ring, two staggered rings; nodes shrink so that any number fits without overlap), subagents of subagents sit as small satellites, a curved strand joins each agent to its parent. `web/web.js` puts that drawing on the page, lays a real button over every node, and fills the "Right now" panel. The same renderer runs inside the local service for the pane in the Claude app (`../server/webview.mjs`).
+Motion: a node emerges from its parent, the strand lights up on delegation, dots flow while that agent works, a packet runs out on each tool call, a mint packet travels back with a report, a ring marks completion. Every animation is phase-locked to the clock so redrawing never restarts it, and all of it is left out under "Reduce motion" or the system setting.
+The older Card tree (`cards/`) is no longer loaded.
+
+Names: a subagent's node, its "Right now" row and its details panel show the job it was given (the real description of the delegation, e.g. "Review server code structure"); its type (e.g. general-purpose) is listed in the details under "Agent type". The task title skips wrapper tags such as `<pasted_content id="...">` and markdown marks and uses the first real line of the prompt.

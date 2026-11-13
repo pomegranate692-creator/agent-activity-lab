@@ -19,16 +19,16 @@ const tab = (p, name) => p.evaluate((nm) => [...document.querySelectorAll('.ap-t
 
 /* ---- A. demo mode ---- */
 let { p, errs } = await open('file://' + ROOT + '/app/index.html?t=12000&autoplay=0');
-ok(JSON.stringify(await tabs(p)) === JSON.stringify(['Agents*', 'Tool stream']), 'demo tabs are Agents and Tool stream (Output hidden)');
+ok(JSON.stringify(await tabs(p)) === JSON.stringify(['Web*', 'Activity']), 'demo views are Web and Activity (Output hidden)');
 ok(await p.evaluate(() => /DEMO MODE/.test(document.body.innerText) && document.querySelector('.ac-badge').innerText === 'SIMULATED'), 'demo mode banner and SIMULATED badge');
 ok(await p.evaluate(() => !document.querySelector('.ap-cprimary')), 'no Run button in demo mode');
 ok(await p.evaluate(() => document.querySelectorAll('.ap-pill').length === 2), 'Needs You lists the blocked and the failed agent');
-await p.evaluate(() => document.querySelector('.ap-pill-blocked').click()); await sleep(300); ok(await p.evaluate(() => /Coder/.test(document.querySelector('.ac-ins-name').innerText)), 'Needs-You pill selects the agent');
-await p.evaluate(() => document.querySelector('.cd-card[data-id="test"]').focus()); await p.keyboard.press('Enter'); await sleep(300); ok(await p.evaluate(() => /Tester/.test(document.querySelector('.ac-ins-name').innerText)), 'keyboard Enter on a card selects it');
-ok(await p.evaluate(() => document.querySelectorAll('.cd-lane').length >= 10), 'cards have activity lanes');
-await tab(p, 'Tool stream'); await sleep(300); ok(await p.evaluate(() => document.querySelectorAll('.ts-row').length > 5), 'Tool stream has rows');
+await p.evaluate(() => document.querySelector('.ap-pill-blocked').click()); await sleep(300); ok(await p.evaluate(() => /Coder/.test(document.querySelector('.ac-inspector').innerText)), 'Needs-You pill selects the agent');
+await p.evaluate(() => document.querySelector('.lw-node[data-id="test"]').focus()); await p.keyboard.press('Enter'); await sleep(300); ok(await p.evaluate(() => /Tester/.test(document.querySelector('.ac-inspector').innerText)), 'keyboard Enter on a card selects it');
+ok(await p.evaluate(() => document.querySelectorAll('.lw-art .lw-strand').length >= 5 && !!document.querySelector('.lw-art .lw-hub')), 'the web draws the hub and a strand to every subagent');
+await tab(p, 'Activity'); await sleep(300); ok(await p.evaluate(() => document.querySelectorAll('.ts-row').length > 5), 'Tool stream has rows');
 ok(errs.length === 0, 'demo page errors: ' + errs.join('|')); await p.close();
-({ p, errs } = await open('file://' + ROOT + '/app/index.html?scenario=stress&t=11000&autoplay=0')); ok(await p.evaluate(() => Object.keys(window.__agentlab.state().agents).length === 30 && document.querySelectorAll('.cd-card').length > 5), 'stress run: 30 agents, cards drawn'); ok(errs.length === 0, 'stress errors: ' + errs.join('|')); await p.close();
+({ p, errs } = await open('file://' + ROOT + '/app/index.html?scenario=stress&t=11000&autoplay=0')); ok(await p.evaluate(() => Object.keys(window.__agentlab.state().agents).length === 30 && document.querySelectorAll('.lw-node').length === 30 && (() => { const w = document.querySelector('.lw-wrap').getBoundingClientRect(); return [...document.querySelectorAll('.lw-node')].every((b) => { const r = b.getBoundingClientRect(); return r.left >= w.left - 1 && r.right <= w.right + 1 && r.top >= w.top - 1 && r.bottom <= w.bottom + 1; }); })()), 'stress run: all 30 agents are drawn as nodes and fit inside the view'); ok(errs.length === 0, 'stress errors: ' + errs.join('|')); await p.close();
 ({ p, errs } = await open('file://' + ROOT + '/app/index.html?reduced=1&speed=4')); await sleep(2500); ok(await p.evaluate(() => window.__agentlab.state().t > 3000), 'reduced motion: clock advances'); ok(errs.length === 0, 'reduced-motion errors'); await p.close();
 
 /* ---- B. live flow with the stub ---- */
@@ -48,13 +48,12 @@ await p.evaluate(() => [...document.querySelectorAll('.ap-cbtn')].find((b) => b.
 await p.evaluate(() => document.querySelector('.ap-hi').click()); await sleep(900); ok(await p.evaluate(() => /TEST STUB/.test(document.querySelector('.ac-badge').innerText) && Object.keys(window.__agentlab.state().agents).length === 2), 'reopening a saved session restores it with an honest badge');
 ok(errs.length === 0, 'live flow page errors: ' + errs.join('|'));
 /* selection sync between the Agents view and the Tool stream (shared selection) */
-await tab(p, 'Agents'); await sleep(400);
-await p.evaluate(() => document.querySelector('.cd-card[data-id="main"] .cd-tog')?.click()); await sleep(400); // collapse the main agent's subtree
-ok(await p.evaluate(() => !document.querySelector('.cd-card[data-id="toolu_sub1"]')), 'the subagent card is hidden while its parent is collapsed');
-await tab(p, 'Tool stream'); await sleep(400); await p.evaluate(() => document.querySelector('.ts-row[data-agent="toolu_sub1"]').click()); await sleep(400);
-ok(await p.evaluate(() => /data-inspector/.test(document.querySelector('.ac-ins-name').innerText)), 'clicking a Tool stream row selects that agent in the shared inspector');
-await tab(p, 'Agents'); await sleep(600); ok(await p.evaluate(() => document.querySelector('.cd-card[data-id="toolu_sub1"]')?.classList.contains('sel')), 'the collapsed card is revealed and highlighted in the Agents view');
-await p.evaluate(() => document.querySelector('.cd-card[data-id="main"]').click()); await sleep(300); await tab(p, 'Tool stream'); await sleep(500);
+await tab(p, 'Web'); await sleep(400);
+ok(await p.evaluate(() => !!document.querySelector('.lw-node[data-id="toolu_sub1"]') && !document.querySelector('.lw-node.sel')), 'the subagent has its own node in the web and nothing is selected yet');
+await tab(p, 'Activity'); await sleep(400); await p.evaluate(() => document.querySelector('.ts-row[data-agent="toolu_sub1"]').click()); await sleep(400);
+ok(await p.evaluate(() => /data-inspector/.test(document.querySelector('.ac-inspector').innerText)), 'clicking a Tool stream row selects that agent in the shared inspector');
+await tab(p, 'Web'); await sleep(600); ok(await p.evaluate(() => document.querySelector('.lw-node[data-id="toolu_sub1"]')?.classList.contains('sel')), 'the same agent is highlighted in the web');
+await p.evaluate(() => document.querySelector('.lw-node[data-id="main"]').click()); await sleep(300); await tab(p, 'Activity'); await sleep(500);
 ok(await p.evaluate(() => document.querySelector('.ts-list').classList.contains('has-sel') && [...document.querySelectorAll('.ts-row.sel')].every((r) => r.dataset.agent === 'main') && document.querySelectorAll('.ts-row.sel').length > 0), 'selecting a card highlights that agent\'s rows in the Tool stream');
 await p.evaluate(() => [...document.querySelectorAll('.ts-chip')].find((c) => /^Only /.test(c.textContent)).click()); await sleep(300);
 ok(await p.evaluate(() => [...document.querySelectorAll('.ts-row')].every((r) => r.dataset.agent === 'main')), '"Only <agent>" filters the Tool stream to the selected agent');
@@ -67,8 +66,8 @@ await p.evaluate(() => [...document.querySelectorAll('.ap-cdlg button')].find((b
 ok(await p.evaluate(() => /Running|Succeeded/.test(document.querySelector('.ap-cchip').innerText)), 'approve-and-continue started a linked session'); await sleep(2500);
 /* per-agent retry: a task whose subagent fails */
 await p.click('.ap-cprimary'); await sleep(300); await p.type('.ap-ta', 'FAIL_SUB please run the flaky part'); await p.click('dialog[aria-label="New task"] button[type=submit]'); await sleep(3500);
-await tab(p, 'Agents'); await sleep(500); await p.evaluate(() => document.querySelector('.cd-card[data-id="toolu_subF"]').click()); await sleep(400);
-ok(await p.evaluate(() => /flaky-worker/.test(document.querySelector('.ac-ins-name').innerText) && !![...document.querySelectorAll('.ap-ctl .ap-cbtn')].find((b) => /Retry this agent/.test(b.textContent))), 'the failed subagent offers Retry in the inspector');
+await tab(p, 'Web'); await sleep(500); await p.evaluate(() => document.querySelector('.lw-node[data-id="toolu_subF"]').click()); await sleep(400);
+ok(await p.evaluate(() => /flaky-worker/.test(document.querySelector('.ac-inspector').innerText) && !![...document.querySelectorAll('.ap-ctl .ap-cbtn')].find((b) => /Retry this agent/.test(b.textContent))), 'the failed subagent offers Retry in the inspector');
 await p.evaluate(() => [...document.querySelectorAll('.ap-ctl .ap-cbtn')].find((b) => /Retry this agent/.test(b.textContent)).click()); await sleep(400);
 ok(await p.evaluate(() => /same conversation/.test(document.querySelector('.ap-cdlg').innerText)), 'retry explains what it will do before running');
 await p.evaluate(() => [...document.querySelectorAll('.ap-cdlg button')].find((b) => b.textContent === 'Retry').click()); await sleep(1500);

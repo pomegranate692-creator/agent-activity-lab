@@ -16,17 +16,19 @@ window.__AppViews.views.push({
   create: function (stage, ctx) {
     var U = ctx.core.util;
     var NS = 'http://www.w3.org/2000/svg';
-    var W = 240, PITCH = 284, PADX = 28, GAP = 10, H1 = 48, H2 = 64, CAP = 24, AUTO_COLLAPSE_MS = 1500, PULSE_MS = 1100, LABEL_MS = 2600;
+    var W = 264, PITCH = 340, PADX = 32, GAP = 14, H1 = 58, H2 = 76, CAP = 27, AUTO_COLLAPSE_MS = 1500, PULSE_MS = 1100, LABEL_MS = 2600;
     var RANK = { done: 0, queued: 1, waiting: 2, working: 3, blocked: 4, failed: 5 };
-    var INK = '#1F2528', ACC = '#1F8A7A', AMBER = '#B7790A', RUST = '#B5472F', SLATE = '#56636A', MIST = '#B7BCB8';
+    var INK = '#F5F7FA', ACC = '#4DA3FF', AMBER = '#FFB84D', RUST = '#FF6572', SLATE = '#5D6778', MIST = '#3A4554', VIOLET = '#A77BFF', MINT = '#3DE5B3', BG = '#050608', RAISED = '#191F29';
+    function motionClass() { stage.classList.toggle('ac-reduced', !!ctx.reducedMotion()); }
 
     /* ------------------------------------------------------------ DOM */
     var scroller = el('div', 'cd-scroll', stage);
     var canvas = el('div', 'cd-canvas', scroller);
     var under = svg('svg', { 'class': 'cd-under', 'aria-hidden': 'true' }, canvas);
     under.innerHTML = '<defs>' +
-      marker('cd-m-dep', SLATE) + marker('cd-m-depx', INK) + marker('cd-m-msg', ACC) + marker('cd-m-res', INK) + '</defs>' +
+      marker('cd-m-dep', SLATE) + marker('cd-m-depx', INK) + marker('cd-m-msg', ACC) + marker('cd-m-res', MINT) + marker('cd-m-resx', RUST) + '</defs>' +
       '<g class="g-elb"></g><g class="g-dep"></g><g class="g-msg"></g>';
+    motionClass();
     var gElb = under.querySelector('.g-elb'), gDep = under.querySelector('.g-dep'), gMsg = under.querySelector('.g-msg');
     var taskEl = el('div', 'cd-task', canvas); taskEl.innerHTML = '<div class="cd-task-title"></div><div class="cd-task-pct"></div><div class="cd-task-bar"><i></i></div>';
     var taskTitle = taskEl.children[0], taskPct = taskEl.children[1], taskBar = taskEl.querySelector('i');
@@ -37,12 +39,11 @@ window.__AppViews.views.push({
     var emptyEl = el('div', 'cd-empty', canvas); emptyEl.textContent = 'Waiting for the first agent to spawn…';
     var legend = el('div', 'cd-legend', stage); legend.setAttribute('aria-hidden', 'true');
     legend.innerHTML =
-      '<span><svg viewBox="0 0 36 10"><path d="M1 5H13V2H35" stroke="' + SLATE + '" stroke-width="1.4" fill="none"/></svg>delegates to</span>' +
-      '<span><svg viewBox="0 0 36 10"><path d="M1 5H35" stroke="' + SLATE + '" stroke-width="1.6" stroke-dasharray="5 4" fill="none"/></svg>waits for</span>' +
+      '<span><svg viewBox="0 0 36 10"><path d="M1 8H12Q16 8 16 5Q16 2 20 2H35" stroke="' + VIOLET + '" stroke-width="1.6" fill="none"/></svg>delegates to</span>' +
       '<span><svg viewBox="0 0 36 10"><path d="M1 5H35" stroke="' + ACC + '" stroke-width="2.4" stroke-dasharray="0.1 5" stroke-linecap="round" fill="none"/></svg>message</span>' +
-      '<span><b class="cd-lg-tog">▸ 2/5</b>folded: done/total · worst state</span>' +
-      '<span><i class="cd-lg-stack"></i>stacked = hidden agents</span>' +
-      '<span><b class="cd-lg-tog">↻2</b>retried</span>';
+      '<span><svg viewBox="0 0 36 10"><path d="M1 5H35" stroke="' + SLATE + '" stroke-width="1.6" stroke-dasharray="5 4" fill="none"/></svg>waits for</span>' +
+      '<span><b class="cd-lg-tog">▸ 2/5</b>folded: done/total</span>' +
+      '<span><b class="cd-lg-re">↻2</b>retried</span>';
 
 function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.className = cls; if (parent) parent.appendChild(e); return e; }
     function svg(tag, attrs, parent) { var e = document.createElementNS(NS, tag); for (var k in attrs) e.setAttribute(k, attrs[k]); if (parent) parent.appendChild(e); return e; }
@@ -51,27 +52,31 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
 
     /* ------------------------------------------------------------ glyphs */
     function glyph(st, mini) {
-      var c = { working: ACC, done: INK, blocked: AMBER, failed: RUST }[st];
       var s = '<svg viewBox="0 0 30 30"' + (mini ? ' class="mini"' : '') + ' aria-hidden="true">';
-      if (st === 'working') s += (mini ? '' : '<circle cx="15" cy="15" r="14" fill="none" stroke="' + ACC + '" stroke-opacity=".35"/>') + '<circle cx="15" cy="15" r="' + (mini ? 11 : 8) + '" fill="' + ACC + '" class="g-in" stroke-width="2"/>';
-      else if (st === 'blocked') s += (mini ? '' : '<circle cx="15" cy="15" r="13" fill="none" stroke="' + AMBER + '" stroke-opacity=".45"/>') + '<circle cx="15" cy="15" r="' + (mini ? 11 : 8) + '" fill="' + AMBER + '"/><path d="M12.7 11.6v6.8M17.3 11.6v6.8" stroke="#F4F2EC" stroke-width="' + (mini ? 3 : 1.9) + '" stroke-linecap="round"/>';
-      else if (st === 'failed') s += '<circle cx="15" cy="15" r="' + (mini ? 11 : 8) + '" fill="' + RUST + '"/><path d="M12 12l6 6M18 12l-6 6" stroke="#F4F2EC" stroke-width="' + (mini ? 3 : 1.9) + '" stroke-linecap="round"/>';
-      else if (st === 'done') s += '<circle cx="15" cy="15" r="' + (mini ? 11 : 8) + '" fill="' + INK + '"/><path d="M11.4 15.4l2.7 2.9l4.7-5.9" stroke="#F4F2EC" stroke-width="' + (mini ? 3 : 1.9) + '" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
-      else if (st === 'waiting') s += '<circle cx="15" cy="15" r="' + (mini ? 10 : 8) + '" fill="none" stroke="' + INK + '" stroke-width="' + (mini ? 3 : 1.6) + '" stroke-dasharray="' + (mini ? '4 4' : '2.6 2.6') + '"/>';
-      else s += '<circle cx="15" cy="15" r="' + (mini ? 10 : 8) + '" fill="none" stroke="' + MIST + '" stroke-width="' + (mini ? 3 : 1.6) + '"/>';
+      if (st === 'working') s += mini ? '<circle cx="15" cy="15" r="10" fill="' + ACC + '"/>'
+        : '<circle class="g-halo" cx="15" cy="15" r="12" fill="none" stroke="' + ACC + '" stroke-width="1.5"/><circle cx="15" cy="15" r="11" fill="none" stroke="' + ACC + '" stroke-opacity=".22" stroke-width="2"/>' +
+          '<circle class="g-spin" cx="15" cy="15" r="11" fill="none" stroke="' + ACC + '" stroke-width="2" stroke-linecap="round" stroke-dasharray="20 49.1"/><circle cx="15" cy="15" r="4.5" fill="' + ACC + '"/>';
+      else if (st === 'blocked') s += mini ? '<circle cx="15" cy="15" r="11" fill="' + AMBER + '"/><path d="M12 10.5v9M18 10.5v9" stroke="' + BG + '" stroke-width="3" stroke-linecap="round"/>'
+        : '<circle cx="15" cy="15" r="11" fill="' + AMBER + '" fill-opacity=".16" stroke="' + AMBER + '" stroke-width="1.6"/><path d="M12.5 11v8M17.5 11v8" stroke="' + AMBER + '" stroke-width="2.2" stroke-linecap="round"/>';
+      else if (st === 'failed') s += mini ? '<circle cx="15" cy="15" r="11" fill="' + RUST + '"/><path d="M11 11l8 8M19 11l-8 8" stroke="' + BG + '" stroke-width="3" stroke-linecap="round"/>'
+        : '<circle cx="15" cy="15" r="11" fill="' + RUST + '" fill-opacity=".16" stroke="' + RUST + '" stroke-width="1.6"/><path d="M11.5 11.5l7 7M18.5 11.5l-7 7" stroke="' + RUST + '" stroke-width="2" stroke-linecap="round"/>';
+      else if (st === 'done') s += mini ? '<circle cx="15" cy="15" r="11" fill="' + MINT + '"/><path d="M10 15.5l3.4 3.6l6.4-7.8" stroke="' + BG + '" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>'
+        : '<circle cx="15" cy="15" r="11" fill="' + MINT + '" fill-opacity=".14" stroke="' + MINT + '" stroke-width="1.6"/><path d="M10.4 15.4l3.2 3.4l6-7.4" stroke="' + MINT + '" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+      else if (st === 'waiting') s += '<circle cx="15" cy="15" r="' + (mini ? 10 : 11) + '" fill="none" stroke="' + AMBER + '" stroke-opacity=".75" stroke-width="' + (mini ? 3 : 1.6) + '" stroke-dasharray="' + (mini ? '4 4' : '3 3.2') + '"/>';
+      else s += '<circle cx="15" cy="15" r="' + (mini ? 10 : 11) + '" fill="none" stroke="' + MIST + '" stroke-width="' + (mini ? 3 : 1.6) + '"/>';
       return s + '</svg>';
     }
     function kindIcon(kind) {
-      var p = { doc: '<path d="M1 1h6l4 4v8H1z" fill="#EAE8E1"/><path d="M7 1v4h4"/>',
+      var p = { doc: '<path d="M1 1h6l4 4v8H1z" fill="' + RAISED + '"/><path d="M7 1v4h4"/>',
         patch: '<path d="M3.5 4.5L1 7l2.5 2.5M8.5 4.5L11 7 8.5 9.5M6.8 3.5L5.2 10.5" fill="none"/>',
-        report: '<path d="M1 1h10v12H1z" fill="#EAE8E1"/><path d="M3.5 10V7.5M6 10V4.5M8.5 10V6.5" fill="none"/>',
-        release: '<path d="M1 7.5V1.5h6l4.5 5-5 5z" fill="#EAE8E1"/><circle cx="4" cy="4.5" r=".9"/>' }[kind] || '<path d="M1 1h6l4 4v8H1z" fill="#EAE8E1"/><path d="M7 1v4h4"/>';
-      return '<svg viewBox="0 0 12 14" fill="none" stroke="' + ACC + '" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + p + '</svg>';
+        report: '<path d="M1 1h10v12H1z" fill="' + RAISED + '"/><path d="M3.5 10V7.5M6 10V4.5M8.5 10V6.5" fill="none"/>',
+        release: '<path d="M1 7.5V1.5h6l4.5 5-5 5z" fill="' + RAISED + '"/><circle cx="4" cy="4.5" r=".9"/>' }[kind] || '<path d="M1 1h6l4 4v8H1z" fill="' + RAISED + '"/><path d="M7 1v4h4"/>';
+      return '<svg viewBox="0 0 12 14" fill="none" stroke="' + MINT + '" stroke-width="1.3" stroke-linejoin="round" stroke-linecap="round" aria-hidden="true">' + p + '</svg>';
     }
 
     /* ------------------------------------------------------------ state */
     var S = null, INFO = {}, KIDS = {}, nodes = {}, lay = null;
-    var cards = {}, toggles = {}, pulses = [], snap = true, prevFinished = false;
+    var cards = {}, toggles = {}, pulses = [], edgeEls = {}, snap = true, prevFinished = false;
     var edgesDirty = true, lastUser = -1e9, scrollTo = null, resultKey = '';
 
     ['wheel', 'touchstart', 'pointerdown', 'keydown'].forEach(function (ev) { scroller.addEventListener(ev, function () { lastUser = performance.now(); scrollTo = null; }, { passive: true }); });
@@ -153,7 +158,7 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
         return n;
       }
       var roots = s.order.filter(function (id) { return isRoot(id); }).map(function (id) { return place(id, 0); });
-      var main = roots[0], shiftY = main ? Math.max(24, 66 - main.y) : 24, bottom = 0;
+      var main = roots[0], shiftY = main ? Math.max(24, 104 - main.y) : 24, bottom = 0;
       order.forEach(function (id) { var n = nodes[id]; n.y += shiftY; n.x = PADX + n.depth * PITCH; bottom = Math.max(bottom, n.y + n.h); });
       return { order: order, bottom: bottom, maxDepth: maxDepth, main: main ? main.id : null };
     }
@@ -193,9 +198,10 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
     function updateCard(c, n) {
       var a = S.agents[n.id], inf = INFO[n.id], hasKids = !!(KIDS[n.id] && KIDS[n.id].length), sel = ctx.selected();
       var rel = !!sel && sel !== n.id && relatedTo(sel, n.id);
-      var cls = 'cd-card st-' + a.state + (sel === n.id ? ' sel' : '') + (rel ? ' rel' : '') + (n.collapsed ? ' collapsed' : '') + (n.st.lines > 1 ? ' tall' : '');
+      var cls = 'cd-card st-' + a.state + (isRoot(n.id) ? '' : ' sub') + (sel === n.id ? ' sel' : '') + (rel ? ' rel' : '') + (n.collapsed ? ' collapsed' : '') + (n.st.lines > 1 ? ' tall' : '');
       if (c.k.cls !== cls) { c.k.cls = cls; c.el.className = cls; }
       if (c.h !== n.h) { c.h = n.h; c.el.style.height = n.h + 'px'; }
+      if (c.k.state !== a.state) { if (c.k.state && !snap) { if (a.state === 'done') bloom(c, 'done'); else if (a.state === 'failed') bloom(c, 'fail'); } c.k.state = a.state; }
       setText(c.glyph, 'g', c, glyph(a.state), 'innerHTML');
       setText(c.name, 'n', c, a.name);
       setText(c.retry, 'r', c, a.attempt > 1 ? '↻' + a.attempt : '');
@@ -204,7 +210,7 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
       var tg = '';
       if (hasKids) {
         var worst = n.collapsed && inf.worstState && inf.worstState !== 'done' ? glyph(inf.worstState, true) : (n.collapsed && inf.all ? glyph('done', true) : '');
-        tg = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (n.collapsed ? 'M3 1.5L7.5 5L3 8.5' : 'M1.5 3L5 7.5L8.5 3') + '" fill="none" stroke="' + INK + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' + inf.done + '/' + inf.desc + worst;
+        tg = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + (n.collapsed ? 'M3 1.5L7.5 5L3 8.5' : 'M1.5 3L5 7.5L8.5 3') + '" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>' + inf.done + '/' + inf.desc + worst;
       }
       setText(c.tog, 'tog', c, tg, 'innerHTML');
       if (hasKids) {
@@ -229,6 +235,12 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
       return S.messages.some(function (m) { return (m.from === sel && m.to === id) || (m.from === id && m.to === sel); });
     }
 
+    /* a one-shot ring around a card: an agent appearing, finishing or failing (only for changes seen live, never when a record is loaded) */
+    function bloom(c, kind) {
+      if (ctx.reducedMotion()) return;
+      var b = el('span', 'cd-bloom cd-bloom-' + kind, c.el); b.addEventListener('animationend', function () { b.remove(); }); setTimeout(function () { b.remove(); }, 1400);
+    }
+
     function syncCards() {
       var reduced = ctx.reducedMotion();
       Object.keys(cards).forEach(function (id) { if (!nodes[id]) { cards[id].el.remove(); delete cards[id]; } });
@@ -241,7 +253,7 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
         c.tx = n.x; c.ty = n.y;
         if (fresh) {
           var par = S.agents[id].parentId && cards[S.agents[id].parentId];
-          if (snap || reduced || !par) { c.x = c.tx; c.y = c.ty; c.alpha = 1; } else { c.x = par.x; c.y = par.y; c.alpha = 0; }
+          if (snap || reduced || !par) { c.x = c.tx; c.y = c.ty; c.alpha = 1; } else { c.x = par.x + 36; c.y = par.y + (par.h - n.h) / 2; c.alpha = 0; bloom(c, 'spawn'); }
           c.applied = null;
         } else if (snap || reduced) { c.x = c.tx; c.y = c.ty; c.alpha = 1; }
         updateCard(c, n);
@@ -288,7 +300,7 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
             b.addEventListener('keydown', function (ev) { if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); ev.stopPropagation(); selectVisible(o.agentId); } else if (ev.key.indexOf('Arrow') === 0) ev.stopPropagation(); });
           });
         }
-        var rw = Math.max(3 * PITCH - 44, (lay.maxDepth + 1) * PITCH - 44);
+        var rw = Math.max(808, (lay.maxDepth + 1) * PITCH - 76);
         resultEl.style.width = rw + 'px'; resultEl.style.left = PADX + 'px'; resultEl.style.top = (lay.bottom + 30) + 'px';
         lay.resultY = lay.bottom + 30; lay.resultH = resultEl.offsetHeight; lay.resultW = rw;
         height = lay.resultY + lay.resultH + 40; width = Math.max(width, PADX + rw + 40);
@@ -302,6 +314,12 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
     function vis(id) { var g = 0; while (id && !nodes[id] && g++ < 100) { var a = S.agents[id]; id = a && a.parentId; } return id && cards[id] ? id : null; }
     function ep(id) { var c = cards[id]; return { x: c.x + W, y: c.y + c.h / 2 }; }
     function arc(a, b, extra) {
+      var ca = cards[a], cb = cards[b];
+      if (Math.abs(ca.x - cb.x) > W) { // different columns (a report going back to the parent, an instruction going out): travel beside the connection, between the two cards
+        var fwd = ca.x < cb.x, off = 9 + (extra % 3) * 3;
+        var P = { x: fwd ? ca.x + W : ca.x, y: ca.y + ca.h / 2 + off }, Q = { x: fwd ? cb.x - 2 : cb.x + W + 2, y: cb.y + cb.h / 2 + off }, mx = (P.x + Q.x) / 2;
+        return { A: P, B: Q, c1: { x: mx, y: P.y }, c2: { x: mx, y: Q.y } };
+      }
       var A = ep(a), B = ep(b), same = Math.abs(A.x - B.x) < 2, bx = (same ? 20 : 46) + Math.min(26, Math.abs(A.y - B.y) / 14) + extra;
       return { A: A, B: B, c1: { x: A.x + bx, y: A.y }, c2: { x: B.x + bx, y: B.y } };
     }
@@ -318,26 +336,46 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
       var recentDeleg = {};
       S.delegations.forEach(function (d) { if (d.work && S.t - d.t >= 0 && S.t - d.t < 1600) recentDeleg[d.to] = true; });
 
-      /* elbows: delegation */
-      var h = '';
+      /* delegation: one persistent group per parent -> subagent connection (kept between redraws so its flow animation runs smoothly) */
+      var live = {};
       lay.order.forEach(function (id) {
         var n = nodes[id], c = cards[id];
         n.kids.forEach(function (k) {
           var kc = cards[k.id]; if (!kc) return;
-          var px = c.x + W, py = c.y + c.h / 2, kx = kc.x, ky = kc.y + kc.h / 2, mid = Math.min(px + 22, Math.max(px + 2, kx - 4));
-          var onPath = pathUp[k.id] && sel, hot = recentDeleg[k.id] && S.agents[k.id].parentId === id;
-          var stroke = onPath ? INK : hot ? ACC : SLATE, wd = onPath ? 2.2 : hot ? 2.4 : 1.25;
-          h += '<path d="M' + f(px) + ' ' + f(py) + 'H' + f(mid) + 'V' + f(ky) + 'H' + f(kx) + '" stroke="' + stroke + '" stroke-width="' + wd + '" fill="none" stroke-linejoin="round" opacity="' + (kc.alpha < 1 ? kc.alpha.toFixed(2) : 1) + '"/>';
+          var px = c.x + W, py = c.y + c.h / 2, kx = kc.x, ky = kc.y + kc.h / 2, ka = S.agents[k.id];
+          var onPath = !!(pathUp[k.id] && sel), hot = !!recentDeleg[k.id] && ka.parentId === id;
+          var e = edgeEls[k.id];
+          if (!e) {
+            e = edgeEls[k.id] = { g: svg('g', {}, gElb), k: {} };
+            e.line = svg('path', { 'class': 'cd-edge-line' }, e.g); e.flow = svg('path', { 'class': 'cd-edge-flow' }, e.g);
+            e.pa = svg('circle', { 'class': 'cd-port cd-port-a', r: 3 }, e.g); e.pb = svg('circle', { 'class': 'cd-port cd-port-b', r: 3 }, e.g);
+          }
+          live[k.id] = true;
+          var cls = 'cd-edge st-' + ka.state + (hot ? ' hot' : '') + (onPath ? ' on' : sel ? ' dim' : '');
+          if (e.k.cls !== cls) { e.k.cls = cls; e.g.setAttribute('class', cls); }
+          var gap = kx - px, d = '';
+          if (gap > 14) {
+            var mid = px + gap / 2, dy = ky - py, r = Math.min(14, Math.abs(dy) / 2, gap / 2 - 2), sg = dy < 0 ? -1 : 1;
+            d = r < 1 ? 'M' + f(px) + ' ' + f(py) + 'H' + f(kx)
+              : 'M' + f(px) + ' ' + f(py) + 'H' + f(mid - r) + 'Q' + f(mid) + ' ' + f(py) + ' ' + f(mid) + ' ' + f(py + sg * r) + 'V' + f(ky - sg * r) + 'Q' + f(mid) + ' ' + f(ky) + ' ' + f(mid + r) + ' ' + f(ky) + 'H' + f(kx);
+          }
+          var key = d + '|' + kc.alpha.toFixed(2);
+          if (e.k.d !== key) {
+            e.k.d = key; e.line.setAttribute('d', d); e.flow.setAttribute('d', d);
+            e.pa.setAttribute('cx', f(px)); e.pa.setAttribute('cy', f(py)); e.pb.setAttribute('cx', f(kx)); e.pb.setAttribute('cy', f(ky));
+            e.g.style.display = d ? '' : 'none'; e.g.style.opacity = kc.alpha < 1 ? kc.alpha.toFixed(2) : '';
+          }
         });
       });
+      Object.keys(edgeEls).forEach(function (id) { if (!live[id]) { edgeEls[id].g.remove(); delete edgeEls[id]; } });
+      var h = '';
       if (lay.resultY != null && lay.main && cards[lay.main]) { // root -> RESULT
-        var rc = cards[lay.main], rx = rc.x + W / 2;
-        h += '<path d="M' + f(rx) + ' ' + f(rc.y + rc.h + 34) + 'V' + f(lay.resultY - 2) + '" stroke="' + INK + '" stroke-width="1.4" fill="none" marker-end="url(#cd-m-res)"/>';
+        var rc = cards[lay.main], rx = rc.x + W / 2, bad = S.finishedInfo && S.finishedInfo.status !== 'succeeded';
+        h += '<path d="M' + f(rx) + ' ' + f(rc.y + rc.h + 34) + 'V' + f(lay.resultY - 3) + '" stroke="' + (bad ? RUST : MINT) + '" stroke-opacity=".8" stroke-width="1.5" fill="none" marker-end="url(#' + (bad ? 'cd-m-resx' : 'cd-m-res') + ')"/>';
       }
-      gElb.innerHTML = h;
 
       /* dependencies: dashed arcs in the right gutter, dependency -> dependent */
-      h = ''; var seen = {}, idx = 0;
+      var seen = {}, idx = 0;
       S.dependencies.forEach(function (d) {
         var a = vis(d.from), b = vis(d.to); if (!a || !b || a === b) return;
         var key = a + '>' + b; if (seen[key]) return; seen[key] = 1;
@@ -357,17 +395,17 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
         var op = sel ? (related ? 1 : 0.15) : age < 3000 ? 1 : age < 9000 ? 0.7 : 0.4;
         var p = arc(a, b, 12 + (i % 3) * 5);
         h += '<path d="' + pathD(p) + '" stroke="' + ACC + '" stroke-width="' + (age < 3000 || related ? 2.8 : 2.2) + '" stroke-dasharray="0.1 5.5" stroke-linecap="round" fill="none" opacity="' + op + '" marker-end="url(#cd-m-msg)"/>';
-        if (age >= 0 && age < LABEL_MS && (!sel || related)) labels.push({ p: p, m: m });
+        if (age >= 0 && age < LABEL_MS && (!sel || related)) { labels = labels.filter(function (l) { return l.a !== a; }); labels.push({ a: a, m: m }); }
       });
       gMsg.innerHTML = h;
-      labels.forEach(function (l) {
-        var mid = bez(l.p, 0.5), txt = l.m.text.length > 34 ? l.m.text.slice(0, 33) + '…' : l.m.text, w = txt.length * 6.7 + 14;
-        oh += '<g transform="translate(' + f(Math.min(mid.x + 4, parseFloat(canvas.style.width) - w - 6)) + ' ' + f(mid.y - 9) + ')"><rect width="' + f(w) + '" height="18" rx="9" fill="#F3F1EA" stroke="' + ACC + '" stroke-width="1.2"/><text x="7" y="13" font-family="Menlo, monospace" font-size="11" fill="#0f5d52">' + esc(txt) + '</text></g>';
+      labels.forEach(function (l) { // a small tag on the top edge of the card that sent it (latest message per sender)
+        var sc = cards[l.a], txt = l.m.text.length > 30 ? l.m.text.slice(0, 29) + '…' : l.m.text, w = txt.length * 6.7 + 16;
+        oh += '<g transform="translate(' + f(sc.x + 18) + ' ' + f(sc.y - 10) + ')"><rect width="' + f(w) + '" height="19" rx="9.5" fill="' + RAISED + '" stroke="' + ACC + '" stroke-opacity=".7" stroke-width="1"/><text x="8" y="13.5" font-family="Menlo, monospace" font-size="11" fill="#CFE5FF">' + esc(txt) + '</text></g>';
       });
       if (!reduced) pulses.forEach(function (pl) {
         var a = vis(pl.from), b = vis(pl.to); if (!a || !b || a === b) return;
         var u = U.ease(Math.min(1, pl.age / PULSE_MS)), pt = bez(arc(a, b, 12 + (pl.i % 3) * 5), u);
-        oh += '<circle cx="' + f(pt.x) + '" cy="' + f(pt.y) + '" r="9" fill="' + ACC + '" opacity=".22"/><circle cx="' + f(pt.x) + '" cy="' + f(pt.y) + '" r="4.5" fill="' + ACC + '" stroke="#F3F1EA" stroke-width="1.5"/>';
+        oh += '<circle cx="' + f(pt.x) + '" cy="' + f(pt.y) + '" r="11" fill="' + ACC + '" opacity=".22"/><circle cx="' + f(pt.x) + '" cy="' + f(pt.y) + '" r="4.5" fill="#EAF4FF" stroke="' + ACC + '" stroke-width="1.5"/>';
       });
       over.innerHTML = oh;
     }
@@ -435,7 +473,7 @@ function el(tag, cls, parent) { var e = document.createElement(tag); if (cls) e.
         if (resultEl) { resultEl.remove(); resultEl = null; resultKey = ''; }
         S = s; render();
       },
-      onMotionChange: function () { if (S) render(); },
+      onMotionChange: function () { motionClass(); if (S) render(); },
       resize: function () { edgesDirty = true; }
     };
   }
